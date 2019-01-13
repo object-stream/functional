@@ -14,7 +14,6 @@ const getFinalValue = o => o[finalSymbol];
 const getManyValues = o => o[manySymbol];
 
 const next = async function*(value, fns, index) {
-  debugger;
   for (let i = index; i <= fns.length; ++i) {
     if (value && typeof value.then == 'function') {
       // thenable
