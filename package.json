@@ -1,0 +1,30 @@
+{
+  "name": "@object-stream/functional",
+  "version": "1.0.0",
+  "description": "Creating streams/pipelines out of modern JS functions.",
+  "main": "index.js",
+  "scripts": {
+    "debug": "node --inspect-brk tests/tests.js",
+    "test": "node tests/tests.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/object-stream/functional.git"
+  },
+  "keywords": [
+    "stream",
+    "pipeline",
+    "async",
+    "generator",
+    "function"
+  ],
+  "author": "Eugene Lazutkin <eugene.lazutkin@gmail.com> (https://www.lazutkin.com/)",
+  "license": "BSD-3-Clause",
+  "bugs": {
+    "url": "https://github.com/object-stream/functional/issues"
+  },
+  "homepage": "https://github.com/object-stream/functional#readme",
+  "devDependencies": {
+    "heya-unit": "^0.3.0"
+  }
+}
