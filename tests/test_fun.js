@@ -85,5 +85,14 @@ unit.add(module, [
       t,
       t.startAsync('test_funCombinedFinal')
     );
+  },
+  function test_funAsArray(t) {
+    const y = t.startAsync('test_funAsArray');
+    fun
+      .asArray([1, 2, 3], x => x * x, x => 2 * x + 1)()
+      .then(output => {
+        eval(t.TEST('t.unify(output, [3, 9, 19])'));
+        y.done();
+      });
   }
 ]);

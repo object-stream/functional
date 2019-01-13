@@ -62,9 +62,9 @@ const next = async (value, fns, index, push) => {
 
 const nop = async x => x;
 
-const fun = (...fns) => {
+const prep = fns => {
   fns = fns.filter(fn => fn);
-  if (!fns.length) return nop;
+  if (!fns.length) return fns;
   if (Symbol.asyncIterator && typeof fns[0][Symbol.asyncIterator] == 'function') {
     const f = fns[0];
     fns[0] = async function*() { yield* f[Symbol.asyncIterator](); };
@@ -72,6 +72,12 @@ const fun = (...fns) => {
     const f = fns[0];
     fns[0] = function*() { yield* f[Symbol.iterator](); };
   }
+  return fns;
+};
+
+const fun = (...fns) => {
+  fns = prep(fns);
+  if (!fns.length) return nop;
   return async value => {
     const results = [];
     await next(value, fns, 0, value => results.push(value));
@@ -85,7 +91,18 @@ const fun = (...fns) => {
   };
 };
 
+const asArray = (...fns) => {
+  fns = prep(fns);
+  if (!fns.length) return nop;
+  return async value => {
+    const results = [];
+    await next(value, fns, 0, value => results.push(value));
+    return results;
+  };
+}
+
 fun.next = next;
+fun.asArray = asArray;
 
 fun.none = none;
 fun.final = final;
