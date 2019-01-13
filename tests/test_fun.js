@@ -1,11 +1,10 @@
 'use strict';
 
 const unit = require('heya-unit');
-const {testAsync, delay} = require('./helpers');
+const {test, delay} = require('./helpers');
 const fun = require('../fun');
 
 const {none, final, many} = fun;
-const test = testAsync;
 
 unit.add(module, [
   function test_fun_compact(t) {

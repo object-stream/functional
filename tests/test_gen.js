@@ -1,11 +1,11 @@
 'use strict';
 
 const unit = require('heya-unit');
-const {testGen, delay} = require('./helpers');
+const {delay} = require('./helpers');
+const {test} = require('./helpers-gen');
 const gen = require('../gen');
 
 const {none, final, many} = gen;
-const test = testGen;
 
 unit.add(module, [
   function test_gen_compact(t) {
