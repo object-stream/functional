@@ -46,7 +46,7 @@ const next = async (value, fns, index, push) => {
       break;
     }
     const f = fns[i];
-    value = defs.isFlush(f) ? f.write(value) : f(value);
+    value = typeof f == 'object' && defs.isFlush(f) ? f.write(value) : f(value);
   }
 };
 
@@ -65,7 +65,7 @@ const asArray = (...fns) => {
   }
   let flushed = false;
   if (autoFlushed) {
-    return async () => {
+    return defs.markReadOnly(defs.markFlush(async () => {
       if (flushed) throw Error('Call to a flushed pipe.');
       const results = [];
       await next(undefined, fns, 0, value => results.push(value)).then(() => results);
@@ -73,13 +73,13 @@ const asArray = (...fns) => {
       for (let i = 0; i < fns.length; ++i) {
         const f = fns[i];
         if (defs.isFlush(f)) {
-          await next(f.flush ? f.flush() : f.write(defs.none), fns, i + 1, value => results.push(value));
+          await next(typeof f == 'function' ? f(defs.none) : f.flush ? f.flush() : f.write(defs.none), fns, i + 1, value => results.push(value));
         }
       }
       return results;
-    };
+    }));
   }
-  return async value => {
+  return defs.markFlush(async value => {
     if (flushed) throw Error('Call to a flushed pipe.');
     const results = [];
     if (value !== defs.none) {
@@ -89,11 +89,11 @@ const asArray = (...fns) => {
     for (let i = 0; i < fns.length; ++i) {
       const f = fns[i];
       if (defs.isFlush(f)) {
-        await next(f.flush ? f.flush() : f.write(defs.none), fns, i + 1, value => results.push(value));
+        await next(typeof f == 'function' ? f(defs.none) : f.flush ? f.flush() : f.write(defs.none), fns, i + 1, value => results.push(value));
       }
     }
     return results;
-  };
+  });
 };
 
 const fun = (...fns) => {

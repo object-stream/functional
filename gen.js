@@ -46,7 +46,7 @@ const next = async function*(value, fns, index) {
       break;
     }
     const f = fns[i];
-    value = defs.isFlush(f) ? f.write(value) : f(value);
+    value = typeof f == 'object' && defs.isFlush(f) ? f.write(value) : f(value);
   }
 };
 
@@ -69,19 +69,19 @@ const gen = (...fns) => {
   }
   let flushed = false;
   if (autoFlushed) {
-    return async function*() {
+    return defs.markReadOnly(defs.markFlush(async function*() {
       if (flushed) throw Error('Call to a flushed pipe.');
       yield* next(undefined, fns, 0);
       flushed = true;
       for (let i = 0; i < fns.length; ++i) {
         const f = fns[i];
         if (defs.isFlush(f)) {
-          yield* next(f.flush ? f.flush() : f.write(defs.none), fns, i + 1);
+          yield* next(typeof f == 'function' ? f(defs.none) : f.flush ? f.flush() : f.write(defs.none), fns, i + 1);
         }
       }
-    };
+    }));
   }
-  return async function*(value) {
+  return defs.markFlush(async function*(value) {
     if (flushed) throw Error('Call to a flushed pipe.');
     if (value !== defs.none) {
       yield* next(value, fns, 0);
@@ -90,11 +90,11 @@ const gen = (...fns) => {
       for (let i = 0; i < fns.length; ++i) {
         const f = fns[i];
         if (defs.isFlush(f)) {
-          yield* next(f.flush ? f.flush() : f.write(defs.none), fns, i + 1);
+          yield* next(typeof f == 'function' ? f(defs.none) : f.flush ? f.flush() : f.write(defs.none), fns, i + 1);
         }
       }
     }
-  };
+  });
 };
 
 gen.next = next;
