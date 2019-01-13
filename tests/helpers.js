@@ -1,7 +1,4 @@
-const none = Symbol.for('object-stream.none');
-const manySymbol = Symbol.for('object-stream.many');
-const isMany = o => o && typeof o == 'object' && manySymbol in o;
-const getManyValues = o => o[manySymbol];
+const {none, isMany} = require('../defs');
 
 const test = (source, pipe, result, t, y) => {
   let p;
@@ -11,14 +8,14 @@ const test = (source, pipe, result, t, y) => {
       for (let x of source) {
         const value = await pipe(x);
         if (isMany(value)) {
-          output.push(...getManyValues(value));
+          output.push(...value.values);
         } else if (value !== none) {
           output.push(value);
         }
       }
       const value = await pipe(none);
       if (isMany(value)) {
-        output.push(...getManyValues(value));
+        output.push(...value.values);
       } else if (value !== none) {
         output.push(value);
       }
@@ -28,7 +25,7 @@ const test = (source, pipe, result, t, y) => {
     p = async () => {
       const value = await pipe();
       if (isMany(value)) {
-        return getManyValues(value);
+        return value.values;
       } else if (value !== none) {
         return [value];
       }

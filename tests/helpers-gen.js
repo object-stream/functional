@@ -1,4 +1,4 @@
-const none = Symbol.for('object-stream.none');
+const {none} = require('../defs');
 
 const test = (source, pipe, result, t, y) => {
   let p;

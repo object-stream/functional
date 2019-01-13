@@ -10,12 +10,12 @@ const next = async function*(value, fns, index) {
     }
     if (value === defs.none) break;
     if (defs.isFinal(value)) {
-      const val = defs.getFinalValue(value);
+      const val = value.value;
       if (val !== defs.none) yield val;
       break;
     }
     if (defs.isMany(value)) {
-      const values = defs.getManyValues(value);
+      const values = value.values;
       if (i == fns.length) {
         yield* values;
       } else {
@@ -76,8 +76,7 @@ const gen = (...fns) => {
       for (let i = 0; i < fns.length; ++i) {
         const f = fns[i];
         if (defs.isFlush(f)) {
-          const g = defs.getFlushValue(f);
-          yield* next(g ? g.call(f) : f.write(defs.none), fns, i + 1);
+          yield* next(f.flush ? f.flush() : f.write(defs.none), fns, i + 1);
         }
       }
     };
@@ -91,8 +90,7 @@ const gen = (...fns) => {
       for (let i = 0; i < fns.length; ++i) {
         const f = fns[i];
         if (defs.isFlush(f)) {
-          const g = defs.getFlushValue(f);
-          yield* next(g ? g.call(f) : f.write(defs.none), fns, i + 1);
+          yield* next(f.flush ? f.flush() : f.write(defs.none), fns, i + 1);
         }
       }
     }
