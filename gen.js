@@ -63,7 +63,7 @@ const next = async function*(value, fns, index) {
 
 const nop = async function*(x) { yield x; };
 
-const asGen = (...fns) => {
+const gen = (...fns) => {
   fns = fns.filter(fn => fn);
   if (!fns.length) return nop;
   if (Symbol.asyncIterator && typeof fns[0][Symbol.asyncIterator] == 'function') {
@@ -78,14 +78,14 @@ const asGen = (...fns) => {
   };
 };
 
-asGen.next = next;
+gen.next = next;
 
-asGen.none = none;
-asGen.final = final;
-asGen.isFinal = isFinal;
-asGen.getFinalValue = getFinalValue;
-asGen.many = many;
-asGen.isMany = isMany;
-asGen.getManyValues = getManyValues;
+gen.none = none;
+gen.final = final;
+gen.isFinal = isFinal;
+gen.getFinalValue = getFinalValue;
+gen.many = many;
+gen.isMany = isMany;
+gen.getManyValues = getManyValues;
 
-module.exports = asGen;
+module.exports = gen;
