@@ -5,7 +5,7 @@ const {delay} = require('./helpers');
 const {test} = require('./helpers-gen');
 const gen = require('../gen');
 
-const {none, final, many} = gen;
+const {none, final, many, flush} = gen;
 
 unit.add(module, [
   function test_gen_compact(t) {
@@ -127,5 +127,13 @@ unit.add(module, [
       t,
       t.startAsync('test_genAsAsyncGen')
     );
+  },
+  function test_genFlush(t) {
+    let acc = 0;
+    test([1, 2, 3], gen(x => x * x, flush(x => ((acc += x), none), () => acc)), [14], t, t.startAsync('test_genFlush'));
+  },
+  function test_genFlushCompact(t) {
+    let acc = 0;
+    test(null, gen([1, 2, 3], x => x * x, flush(x => ((acc += x), none), () => acc)), [14], t, t.startAsync('test_genFlushCompact'));
   }
 ]);

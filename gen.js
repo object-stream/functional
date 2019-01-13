@@ -3,15 +3,19 @@
 const none = Symbol.for('object-stream.none');
 const finalSymbol = Symbol.for('object-stream.final');
 const manySymbol = Symbol.for('object-stream.many');
+const flushSymbol = Symbol.for('object-stream.flush');
 
 const final = value => ({[finalSymbol]: value});
 const many = values => ({[manySymbol]: values});
+const flush = (write, flush = null) => ({write, [flushSymbol]: flush});
 
 const isFinal = o => o && typeof o == 'object' && finalSymbol in o;
 const isMany = o => o && typeof o == 'object' && manySymbol in o;
+const isFlush = o => o && typeof o == 'object' && flushSymbol in o;
 
 const getFinalValue = o => o[finalSymbol];
 const getManyValues = o => o[manySymbol];
+const getFlushValue = o => o[flushSymbol];
 
 const next = async function*(value, fns, index) {
   for (let i = index; i <= fns.length; ++i) {
@@ -56,7 +60,8 @@ const next = async function*(value, fns, index) {
       yield value;
       break;
     }
-    value = fns[i](value);
+    const f = fns[i];
+    value = isFlush(f) ? f.write(value) : f(value);
   }
 };
 
@@ -66,15 +71,47 @@ const nop = async function*(x) {
 
 const gen = (...fns) => {
   fns = fns.filter(fn => fn);
-  if (!fns.length) return nop;
+  if (!fns.length) fns = [x => x];
+  let autoFlushed = false;
   if (Symbol.asyncIterator && typeof fns[0][Symbol.asyncIterator] == 'function') {
     const f = fns[0];
     fns[0] = () => f[Symbol.asyncIterator]();
+    autoFlushed = true;
   } else if (Symbol.iterator && typeof fns[0][Symbol.iterator] == 'function') {
     const f = fns[0];
     fns[0] = () => f[Symbol.iterator]();
+    autoFlushed = true;
   }
-  return value => next(value, fns, 0);
+  let flushed = false;
+  if (autoFlushed) {
+    return async function*() {
+      if (flushed) throw Error('Call to a flushed pipe.');
+      yield* next(undefined, fns, 0);
+      flushed = true;
+      for (let i = 0; i < fns.length; ++i) {
+        const f = fns[i];
+        if (isFlush(f)) {
+          const g = getFlushValue(f);
+          yield* next(g ? g.call(f) : f.write(none), fns, i + 1);
+        }
+      }
+    };
+  }
+  return async function*(value) {
+    if (flushed) throw Error('Call to a flushed pipe.');
+    if (value !== none) {
+      yield* next(value, fns, 0);
+    } else {
+      flushed = true;
+      for (let i = 0; i < fns.length; ++i) {
+        const f = fns[i];
+        if (isFlush(f)) {
+          const g = getFlushValue(f);
+          yield* next(g ? g.call(f) : f.write(none), fns, i + 1);
+        }
+      }
+    }
+  };
 };
 
 gen.next = next;
@@ -86,5 +123,8 @@ gen.getFinalValue = getFinalValue;
 gen.many = many;
 gen.isMany = isMany;
 gen.getManyValues = getManyValues;
+gen.flush = flush;
+gen.isFlush = isFlush;
+gen.getFlushValue = getFlushValue;
 
 module.exports = gen;

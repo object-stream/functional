@@ -1,3 +1,5 @@
+const none = Symbol.for('object-stream.none');
+
 const test = (source, pipe, result, t, y) => {
   let p;
   if (source) {
@@ -8,7 +10,10 @@ const test = (source, pipe, result, t, y) => {
           output.push(v);
         }
       }
-      return output;
+      for await (let v of pipe(none)) {
+        output.push(v);
+      }
+    return output;
     };
   } else {
     p = async () => {

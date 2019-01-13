@@ -16,6 +16,12 @@ const test = (source, pipe, result, t, y) => {
           output.push(value);
         }
       }
+      const value = await pipe(none);
+      if (isMany(value)) {
+        output.push(...getManyValues(value));
+      } else if (value !== none) {
+        output.push(value);
+      }
       return output;
     };
   } else {

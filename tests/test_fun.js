@@ -4,7 +4,7 @@ const unit = require('heya-unit');
 const {test, delay} = require('./helpers');
 const fun = require('../fun');
 
-const {none, final, many} = fun;
+const {none, final, many, flush} = fun;
 
 unit.add(module, [
   function test_fun_compact(t) {
@@ -93,5 +93,19 @@ unit.add(module, [
         eval(t.TEST('t.unify(output, [3, 9, 19])'));
         y.done();
       });
+  },
+  function test_funFlush(t) {
+    let acc = 0;
+    test([1, 2, 3], fun(x => x * x, flush(x => ((acc += x), none), () => acc)), [14], t, t.startAsync('test_funFlush'));
+  },
+  function test_funFlushCompact(t) {
+    let acc = 0;
+    test(
+      null,
+      fun([1, 2, 3], x => x * x, flush(x => ((acc += x), none), () => acc)),
+      [14],
+      t,
+      t.startAsync('test_funFlushCompact')
+    );
   }
 ]);
