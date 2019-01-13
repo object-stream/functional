@@ -13,6 +13,6 @@ const pipe = gen(
 
 (async () => {
   for await (let buf of pipe()) {
-    await promisify(fs.writeSync)(1, buf);
+    await promisify(fs.write)(1, buf);
   }
 })();
