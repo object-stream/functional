@@ -60,7 +60,7 @@ const next = async (value, fns, index, push) => {
   }
 };
 
-const nop = x => x;
+const nop = async x => x;
 
 const fun = (...fns) => {
   fns = fns.filter(fn => fn);
