@@ -134,6 +134,12 @@ unit.add(module, [
   },
   function test_genFlushCompact(t) {
     let acc = 0;
-    test(null, gen([1, 2, 3], x => x * x, flush(x => ((acc += x), none), () => acc)), [14], t, t.startAsync('test_genFlushCompact'));
+    test(
+      null,
+      gen([1, 2, 3], x => x * x, flush(x => ((acc += x), none), () => acc)),
+      [14],
+      t,
+      t.startAsync('test_genFlushCompact')
+    );
   }
 ]);

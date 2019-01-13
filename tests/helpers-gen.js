@@ -13,7 +13,7 @@ const test = (source, pipe, result, t, y) => {
       for await (let v of pipe(none)) {
         output.push(v);
       }
-    return output;
+      return output;
     };
   } else {
     p = async () => {
