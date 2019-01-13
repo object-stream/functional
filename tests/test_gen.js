@@ -41,13 +41,7 @@ unit.add(module, [
     });
   },
   function test_genFinal(t) {
-    test(
-      null,
-      gen([1, 2, 3], x => x * x, x => final(x), x => 2 * x + 1),
-      [1, 4, 9],
-      t,
-      t.startAsync('test_genFinal')
-    );
+    test(null, gen([1, 2, 3], x => x * x, x => final(x), x => 2 * x + 1), [1, 4, 9], t, t.startAsync('test_genFinal'));
   },
   function test_compNothing(t) {
     test([1, 2, 3], gen(x => x * x, () => none, x => 2 * x + 1), [], t, t.startAsync('test_compNothing'));
@@ -117,51 +111,22 @@ unit.add(module, [
       t,
       t.startAsync('test_genCombinedFinal')
     );
+  },
+  function test_genAsAsyncGen(t) {
+    test(
+      [1, 2],
+      gen(
+        delay(x => -x),
+        x => many([x, x * 10]),
+        async function*(x) {
+          yield delay(x => x)(x);
+          yield delay(x => final(x - 1))(x);
+        },
+        x => -x
+      ),
+      [1, -2, 10, -11, 2, -3, 20, -21],
+      t,
+      t.startAsync('test_genAsAsyncGen')
+    );
   }
-  // function test_genAsGen(t) {
-  //   const async = t.startAsync('test_genAsGen');
-
-  //   const output = [],
-  //     chain = new Chain([
-  //       fromIterable([1, 2]),
-  //       gen(
-  //         delay(x => -x),
-  //         x => many([x, x * 10]),
-  //         function*(x) {
-  //           yield x;
-  //           yield final(x - 1);
-  //         },
-  //         x => -x
-  //       ),
-  //       streamToArray(output)
-  //     ]);
-
-  //   chain.on('end', () => {
-  //     eval(t.TEST('t.unify(output, [1, -2, 10, -11, 2, -3, 20, -21])'));
-  //     async.done();
-  //   });
-  // },
-  // function test_genAsAsyncGen(t) {
-  //   const async = t.startAsync('test_genAsAsyncGen');
-
-  //   const output = [],
-  //     chain = new Chain([
-  //       fromIterable([1, 2]),
-  //       gen(
-  //         delay(x => -x),
-  //         x => many([x, x * 10]),
-  //         async function*(x) {
-  //           yield delay(x => x)(x);
-  //           yield delay(x => final(x - 1))(x);
-  //         },
-  //         x => -x
-  //       ),
-  //       streamToArray(output)
-  //     ]);
-
-  //   chain.on('end', () => {
-  //     eval(t.TEST('t.unify(output, [1, -2, 10, -11, 2, -3, 20, -21])'));
-  //     async.done();
-  //   });
-  // }
 ]);
