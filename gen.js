@@ -46,12 +46,8 @@ const next = async function*(value, fns, index) {
       break;
     }
     const f = fns[i];
-    value = typeof f == 'object' && defs.isFlush(f) ? f.write(value) : f(value);
+    value = f instanceof defs.Flush ? f.write(value) : f(value);
   }
-};
-
-const nop = async function*(x) {
-  yield x;
 };
 
 const gen = (...fns) => {
@@ -75,8 +71,10 @@ const gen = (...fns) => {
       flushed = true;
       for (let i = 0; i < fns.length; ++i) {
         const f = fns[i];
-        if (defs.isFlush(f)) {
-          yield* next(typeof f == 'function' ? f(defs.none) : f.flush ? f.flush() : f.write(defs.none), fns, i + 1);
+        if (f instanceof defs.Flush) {
+          yield* next(f.flush(), fns, i + 1);
+        } else if (defs.isFlush(f)) {
+          yield* next(f(defs.none), fns, i + 1);
         }
       }
     }));
@@ -89,8 +87,10 @@ const gen = (...fns) => {
       flushed = true;
       for (let i = 0; i < fns.length; ++i) {
         const f = fns[i];
-        if (defs.isFlush(f)) {
-          yield* next(typeof f == 'function' ? f(defs.none) : f.flush ? f.flush() : f.write(defs.none), fns, i + 1);
+        if (f instanceof defs.Flush) {
+          yield* next(f.flush(), fns, i + 1);
+        } else if (defs.isFlush(f)) {
+          yield* next(f(defs.none), fns, i + 1);
         }
       }
     }

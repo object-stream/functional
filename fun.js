@@ -46,7 +46,7 @@ const next = async (value, fns, index, push) => {
       break;
     }
     const f = fns[i];
-    value = typeof f == 'object' && defs.isFlush(f) ? f.write(value) : f(value);
+    value = f instanceof defs.Flush ? f.write(value) : f(value);
   }
 };
 
@@ -65,31 +65,40 @@ const asArray = (...fns) => {
   }
   let flushed = false;
   if (autoFlushed) {
-    return defs.markReadOnly(defs.markFlush(async () => {
-      if (flushed) throw Error('Call to a flushed pipe.');
-      const results = [];
-      await next(undefined, fns, 0, value => results.push(value)).then(() => results);
-      flushed = true;
-      for (let i = 0; i < fns.length; ++i) {
-        const f = fns[i];
-        if (defs.isFlush(f)) {
-          await next(typeof f == 'function' ? f(defs.none) : f.flush ? f.flush() : f.write(defs.none), fns, i + 1, value => results.push(value));
+    return defs.markReadOnly(
+      defs.markFlush(async () => {
+        if (flushed) throw Error('Call to a flushed pipe.');
+        const results = [],
+          push = value => results.push(value);
+        await next(undefined, fns, 0, push);
+        flushed = true;
+        for (let i = 0; i < fns.length; ++i) {
+          const f = fns[i];
+          if (f instanceof defs.Flush) {
+            await next(f.flush(), fns, i + 1, push);
+          } else if (defs.isFlush(f)) {
+            await next(f(defs.none), fns, i + 1, push);
+          }
         }
-      }
-      return results;
-    }));
+        return results;
+      })
+    );
   }
   return defs.markFlush(async value => {
     if (flushed) throw Error('Call to a flushed pipe.');
-    const results = [];
+    const results = [],
+      push = value => results.push(value);
     if (value !== defs.none) {
-      return next(value, fns, 0, value => results.push(value)).then(() => results);
-    }
-    flushed = true;
-    for (let i = 0; i < fns.length; ++i) {
-      const f = fns[i];
-      if (defs.isFlush(f)) {
-        await next(typeof f == 'function' ? f(defs.none) : f.flush ? f.flush() : f.write(defs.none), fns, i + 1, value => results.push(value));
+      await next(value, fns, 0, push);
+    } else {
+      flushed = true;
+      for (let i = 0; i < fns.length; ++i) {
+        const f = fns[i];
+        if (f instanceof defs.Flush) {
+          await next(f.flush(), fns, i + 1, push);
+        } else if (defs.isFlush(f)) {
+          await next(f(defs.none), fns, i + 1, push);
+        }
       }
     }
     return results;
