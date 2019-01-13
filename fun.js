@@ -60,15 +60,17 @@ const next = async (value, fns, index, push) => {
   }
 };
 
-const nop = () => {};
+const nop = x => x;
 
-const asFun = (...fns) => {
+const fun = (...fns) => {
   fns = fns.filter(fn => fn);
   if (!fns.length) return nop;
-  if (Symbol.asyncIterator && fns[0][Symbol.asyncIterator]) {
-    fns[0] = fns[0][Symbol.asyncIterator];
-  } else if (Symbol.iterator && fns[0][Symbol.iterator]) {
-    fns[0] = fns[0][Symbol.iterator];
+  if (Symbol.asyncIterator && typeof fns[0][Symbol.asyncIterator] == 'function') {
+    const f = fns[0];
+    fns[0] = async function*() { yield* f[Symbol.asyncIterator](); };
+  } else if (Symbol.iterator && typeof fns[0][Symbol.iterator] == 'function') {
+    const f = fns[0];
+    fns[0] = function*() { yield* f[Symbol.iterator](); };
   }
   return async value => {
     const results = [];
@@ -83,14 +85,14 @@ const asFun = (...fns) => {
   };
 };
 
-asFun.next = next;
+fun.next = next;
 
-asFun.none = none;
-asFun.final = final;
-asFun.isFinal = isFinal;
-asFun.getFinalValue = getFinalValue;
-asFun.many = many;
-asFun.isMany = isMany;
-asFun.getManyValues = getManyValues;
+fun.none = none;
+fun.final = final;
+fun.isFinal = isFinal;
+fun.getFinalValue = getFinalValue;
+fun.many = many;
+fun.isMany = isMany;
+fun.getManyValues = getManyValues;
 
-module.exports = asFun;
+module.exports = fun;
