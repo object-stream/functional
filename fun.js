@@ -1,21 +1,6 @@
 'use strict';
 
-const none = Symbol.for('object-stream.none');
-const finalSymbol = Symbol.for('object-stream.final');
-const manySymbol = Symbol.for('object-stream.many');
-const flushSymbol = Symbol.for('object-stream.flush');
-
-const final = value => ({[finalSymbol]: value});
-const many = values => ({[manySymbol]: values});
-const flush = (write, flush = null) => ({write, [flushSymbol]: flush});
-
-const isFinal = o => o && typeof o == 'object' && finalSymbol in o;
-const isMany = o => o && typeof o == 'object' && manySymbol in o;
-const isFlush = o => o && typeof o == 'object' && flushSymbol in o;
-
-const getFinalValue = o => o[finalSymbol];
-const getManyValues = o => o[manySymbol];
-const getFlushValue = o => o[flushSymbol];
+const defs = require('./defs');
 
 const next = async (value, fns, index, push) => {
   for (let i = index; i <= fns.length; ++i) {
@@ -23,14 +8,14 @@ const next = async (value, fns, index, push) => {
       // thenable
       value = await value;
     }
-    if (value === none) break;
-    if (isFinal(value)) {
-      const val = getFinalValue(value);
-      val !== none && push(val);
+    if (value === defs.none) break;
+    if (defs.isFinal(value)) {
+      const val = defs.getFinalValue(value);
+      val !== defs.none && push(val);
       break;
     }
-    if (isMany(value)) {
-      const values = getManyValues(value);
+    if (defs.isMany(value)) {
+      const values = defs.getManyValues(value);
       if (i == fns.length) {
         values.forEach(val => push(val));
       } else {
@@ -61,7 +46,7 @@ const next = async (value, fns, index, push) => {
       break;
     }
     const f = fns[i];
-    value = isFlush(f) ? f.write(value) : f(value);
+    value = defs.isFlush(f) ? f.write(value) : f(value);
   }
 };
 
@@ -87,9 +72,9 @@ const asArray = (...fns) => {
       flushed = true;
       for (let i = 0; i < fns.length; ++i) {
         const f = fns[i];
-        if (isFlush(f)) {
-          const g = getFlushValue(f);
-          await next(g ? g.call(f) : f.write(none), fns, i + 1, value => results.push(value));
+        if (defs.isFlush(f)) {
+          const g = defs.getFlushValue(f);
+          await next(g ? g.call(f) : f.write(defs.none), fns, i + 1, value => results.push(value));
         }
       }
       return results;
@@ -98,15 +83,15 @@ const asArray = (...fns) => {
   return async value => {
     if (flushed) throw Error('Call to a flushed pipe.');
     const results = [];
-    if (value !== none) {
+    if (value !== defs.none) {
       return next(value, fns, 0, value => results.push(value)).then(() => results);
     }
     flushed = true;
     for (let i = 0; i < fns.length; ++i) {
       const f = fns[i];
-      if (isFlush(f)) {
-        const g = getFlushValue(f);
-        await next(g ? g.call(f) : f.write(none), fns, i + 1, value => results.push(value));
+      if (defs.isFlush(f)) {
+        const g = defs.getFlushValue(f);
+        await next(g ? g.call(f) : f.write(defs.none), fns, i + 1, value => results.push(value));
       }
     }
     return results;
@@ -119,26 +104,17 @@ const fun = (...fns) => {
     f(value).then(results => {
       switch (results.length) {
         case 0:
-          return none;
+          return defs.none;
         case 1:
           return results[0];
       }
-      return many(results);
+      return defs.many(results);
     });
 };
 
 fun.next = next;
 fun.asArray = asArray;
 
-fun.none = none;
-fun.final = final;
-fun.isFinal = isFinal;
-fun.getFinalValue = getFinalValue;
-fun.many = many;
-fun.isMany = isMany;
-fun.getManyValues = getManyValues;
-fun.flush = flush;
-fun.isFlush = isFlush;
-fun.getFlushValue = getFlushValue;
+Object.assign(fun, defs);
 
 module.exports = fun;

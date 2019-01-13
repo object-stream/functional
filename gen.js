@@ -1,21 +1,6 @@
 'use strict';
 
-const none = Symbol.for('object-stream.none');
-const finalSymbol = Symbol.for('object-stream.final');
-const manySymbol = Symbol.for('object-stream.many');
-const flushSymbol = Symbol.for('object-stream.flush');
-
-const final = value => ({[finalSymbol]: value});
-const many = values => ({[manySymbol]: values});
-const flush = (write, flush = null) => ({write, [flushSymbol]: flush});
-
-const isFinal = o => o && typeof o == 'object' && finalSymbol in o;
-const isMany = o => o && typeof o == 'object' && manySymbol in o;
-const isFlush = o => o && typeof o == 'object' && flushSymbol in o;
-
-const getFinalValue = o => o[finalSymbol];
-const getManyValues = o => o[manySymbol];
-const getFlushValue = o => o[flushSymbol];
+const defs = require('./defs');
 
 const next = async function*(value, fns, index) {
   for (let i = index; i <= fns.length; ++i) {
@@ -23,14 +8,14 @@ const next = async function*(value, fns, index) {
       // thenable
       value = await value;
     }
-    if (value === none) break;
-    if (isFinal(value)) {
-      const val = getFinalValue(value);
-      if (val !== none) yield val;
+    if (value === defs.none) break;
+    if (defs.isFinal(value)) {
+      const val = defs.getFinalValue(value);
+      if (val !== defs.none) yield val;
       break;
     }
-    if (isMany(value)) {
-      const values = getManyValues(value);
+    if (defs.isMany(value)) {
+      const values = defs.getManyValues(value);
       if (i == fns.length) {
         yield* values;
       } else {
@@ -61,7 +46,7 @@ const next = async function*(value, fns, index) {
       break;
     }
     const f = fns[i];
-    value = isFlush(f) ? f.write(value) : f(value);
+    value = defs.isFlush(f) ? f.write(value) : f(value);
   }
 };
 
@@ -90,24 +75,24 @@ const gen = (...fns) => {
       flushed = true;
       for (let i = 0; i < fns.length; ++i) {
         const f = fns[i];
-        if (isFlush(f)) {
-          const g = getFlushValue(f);
-          yield* next(g ? g.call(f) : f.write(none), fns, i + 1);
+        if (defs.isFlush(f)) {
+          const g = defs.getFlushValue(f);
+          yield* next(g ? g.call(f) : f.write(defs.none), fns, i + 1);
         }
       }
     };
   }
   return async function*(value) {
     if (flushed) throw Error('Call to a flushed pipe.');
-    if (value !== none) {
+    if (value !== defs.none) {
       yield* next(value, fns, 0);
     } else {
       flushed = true;
       for (let i = 0; i < fns.length; ++i) {
         const f = fns[i];
-        if (isFlush(f)) {
-          const g = getFlushValue(f);
-          yield* next(g ? g.call(f) : f.write(none), fns, i + 1);
+        if (defs.isFlush(f)) {
+          const g = defs.getFlushValue(f);
+          yield* next(g ? g.call(f) : f.write(defs.none), fns, i + 1);
         }
       }
     }
@@ -116,15 +101,6 @@ const gen = (...fns) => {
 
 gen.next = next;
 
-gen.none = none;
-gen.final = final;
-gen.isFinal = isFinal;
-gen.getFinalValue = getFinalValue;
-gen.many = many;
-gen.isMany = isMany;
-gen.getManyValues = getManyValues;
-gen.flush = flush;
-gen.isFlush = isFlush;
-gen.getFlushValue = getFlushValue;
+Object.assign(gen, defs);
 
 module.exports = gen;
