@@ -61,7 +61,7 @@ const next = async function*(value, fns, index) {
   }
 };
 
-const nop = async function*() {};
+const nop = async function*(x) { yield x; };
 
 const asGen = (...fns) => {
   fns = fns.filter(fn => fn);

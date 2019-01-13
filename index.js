@@ -1,3 +1,3 @@
-const asGen = require('./asGen');
+const gen = require('./gen');
 
-module.exports = asGen;
+module.exports = gen;
