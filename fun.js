@@ -69,15 +69,15 @@ const asArray = (...fns) => {
       defs.markFlush(async () => {
         if (flushed) throw Error('Call to a flushed pipe.');
         const results = [],
-          push = value => results.push(value);
-        await next(undefined, fns, 0, push);
+          collect = value => results.push(value);
+        await next(undefined, fns, 0, collect);
         flushed = true;
         for (let i = 0; i < fns.length; ++i) {
           const f = fns[i];
           if (f instanceof defs.Flush) {
-            await next(f.flush(), fns, i + 1, push);
+            await next(f.flush(), fns, i + 1, collect);
           } else if (defs.isFlush(f)) {
-            await next(f(defs.none), fns, i + 1, push);
+            await next(f(defs.none), fns, i + 1, collect);
           }
         }
         return results;
@@ -87,17 +87,19 @@ const asArray = (...fns) => {
   return defs.markFlush(async value => {
     if (flushed) throw Error('Call to a flushed pipe.');
     const results = [],
-      push = value => results.push(value);
+      collect = value => results.push(value);
     if (value !== defs.none) {
-      await next(value, fns, 0, push);
+      await next(value, fns, 0, collect);
     } else {
       flushed = true;
       for (let i = 0; i < fns.length; ++i) {
         const f = fns[i];
         if (f instanceof defs.Flush) {
-          await next(f.flush(), fns, i + 1, push);
+          debugger;
+          await next(f.flush(), fns, i + 1, collect);
         } else if (defs.isFlush(f)) {
-          await next(f(defs.none), fns, i + 1, push);
+          debugger;
+          await next(f(defs.none), fns, i + 1, collect);
         }
       }
     }
@@ -107,7 +109,7 @@ const asArray = (...fns) => {
 
 const fun = (...fns) => {
   const f = asArray(...fns);
-  return async value =>
+  let g = async value =>
     f(value).then(results => {
       switch (results.length) {
         case 0:
@@ -117,6 +119,9 @@ const fun = (...fns) => {
       }
       return defs.many(results);
     });
+  if (defs.isFlush(f)) g = defs.markFlush(g);
+  if (defs.isReadOnly(f)) g = defs.markReadOnly(g);
+  return g;
 };
 
 fun.next = next;

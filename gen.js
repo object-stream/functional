@@ -65,19 +65,21 @@ const gen = (...fns) => {
   }
   let flushed = false;
   if (autoFlushed) {
-    return defs.markReadOnly(defs.markFlush(async function*() {
-      if (flushed) throw Error('Call to a flushed pipe.');
-      yield* next(undefined, fns, 0);
-      flushed = true;
-      for (let i = 0; i < fns.length; ++i) {
-        const f = fns[i];
-        if (f instanceof defs.Flush) {
-          yield* next(f.flush(), fns, i + 1);
-        } else if (defs.isFlush(f)) {
-          yield* next(f(defs.none), fns, i + 1);
+    return defs.markReadOnly(
+      defs.markFlush(async function*() {
+        if (flushed) throw Error('Call to a flushed pipe.');
+        yield* next(undefined, fns, 0);
+        flushed = true;
+        for (let i = 0; i < fns.length; ++i) {
+          const f = fns[i];
+          if (f instanceof defs.Flush) {
+            yield* next(f.flush(), fns, i + 1);
+          } else if (defs.isFlush(f)) {
+            yield* next(f(defs.none), fns, i + 1);
+          }
         }
-      }
-    }));
+      })
+    );
   }
   return defs.markFlush(async function*(value) {
     if (flushed) throw Error('Call to a flushed pipe.');

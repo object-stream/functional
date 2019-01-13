@@ -101,8 +101,8 @@ unit.add(module, [
   function test_funFlushCompact(t) {
     let acc = 0;
     test(
-      null,
-      fun([1, 2, 3], x => x * x, flush(x => ((acc += x), none), () => acc)),
+      [1, 2, 3],
+      fun(x => x * x, flush(x => ((acc += x), none), () => acc)),
       [14],
       t,
       t.startAsync('test_funFlushCompact')
@@ -116,6 +116,16 @@ unit.add(module, [
       [14],
       t,
       t.startAsync('test_funFlushShort')
+    );
+  },
+  function test_funFlushEmbed(t) {
+    let acc = 0;
+    test(
+      [1, 2, 3],
+      fun(fun(x => x * x, flush(x => ((acc += x), none), () => acc)), x => x + 1),
+      [15],
+      t,
+      t.startAsync('test_funFlushEmbed')
     );
   }
 ]);

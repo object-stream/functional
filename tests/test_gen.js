@@ -135,8 +135,8 @@ unit.add(module, [
   function test_genFlushCompact(t) {
     let acc = 0;
     test(
-      null,
-      gen([1, 2, 3], x => x * x, flush(x => ((acc += x), none), () => acc)),
+      [1, 2, 3],
+      gen(x => x * x, flush(x => ((acc += x), none), () => acc)),
       [14],
       t,
       t.startAsync('test_genFlushCompact')
@@ -150,6 +150,16 @@ unit.add(module, [
       [14],
       t,
       t.startAsync('test_genFlushShort')
+    );
+  },
+  function test_genFlushEmbed(t) {
+    let acc = 0;
+    test(
+      [1, 2, 3],
+      gen(gen(x => x * x, flush(x => ((acc += x), none), () => acc)), x => x + 1),
+      [15],
+      t,
+      t.startAsync('test_genFlushEmbed')
     );
   }
 ]);
