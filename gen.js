@@ -61,21 +61,21 @@ const next = async function*(value, fns, index) {
   }
 };
 
-const nop = async function*(x) { yield x; };
+const nop = async function*(x) {
+  yield x;
+};
 
 const gen = (...fns) => {
   fns = fns.filter(fn => fn);
   if (!fns.length) return nop;
   if (Symbol.asyncIterator && typeof fns[0][Symbol.asyncIterator] == 'function') {
     const f = fns[0];
-    fns[0] = async function*() { yield* f[Symbol.asyncIterator](); };
+    fns[0] = () => f[Symbol.asyncIterator]();
   } else if (Symbol.iterator && typeof fns[0][Symbol.iterator] == 'function') {
     const f = fns[0];
-    fns[0] = function*() { yield* f[Symbol.iterator](); };
+    fns[0] = () => f[Symbol.iterator]();
   }
-  return async function*(value) {
-    yield* next(value, fns, 0);
-  };
+  return value => next(value, fns, 0);
 };
 
 gen.next = next;
