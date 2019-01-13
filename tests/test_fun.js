@@ -107,5 +107,15 @@ unit.add(module, [
       t,
       t.startAsync('test_funFlushCompact')
     );
+  },
+  function test_funFlushShort(t) {
+    let acc = 0;
+    test(
+      null,
+      fun([1, 2, 3], x => x * x, flush(x => (x !== none ? ((acc += x), none) : acc))),
+      [14],
+      t,
+      t.startAsync('test_funFlushShort')
+    );
   }
 ]);
