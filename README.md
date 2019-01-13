@@ -80,6 +80,19 @@ const pipe6 = gen(
     await promisify(fs.writeSync)(1, buf);
   }
 })();
+
+// using async and generators
+const pipe7 = gen(
+  async id => await getRecord(id),
+  record => record.parentId,
+  async function* (parentId) {
+    const children = await getChildren(parentId);
+    for (let child of children) {
+      yield getRecord(child.id);
+    }
+  },
+  async record => await writeToFile(record)
+);
 ```
 
 ## Installation
