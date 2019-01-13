@@ -9,11 +9,78 @@
 `@object-stream/functional` creates a chain out of regular functions, asynchronous functions, generator functions
 and asynchronous generator functions. The resulting chain is represented as an asynchronous function or
 an asynchronous generator function. It eliminates a boilerplate helping to concentrate on functionality without losing the performance
-especially make it easy to build object processing pipelines.
+especially making it easy to build asynchronous object processing pipelines using modern JavaScript as a complement/alternative to streams.
 
 `@object-stream/functional` is a lightweight, no-dependencies micro-package. It is distributed under New BSD license.
 
 ## Intro
+
+```js
+const gen = require('@object-stream/functional');
+const fun = require('@object-stream/functional/fun');
+
+// pipe for processing numbers
+const pipe1 = gen(x => x * x, x => x + 1);
+
+(async () => {
+  for (let value of [1, 2, 3]) {
+    for await (let result of pipe1(value)) {
+      console.log(result);
+    }
+  }
+})();
+// 2, 5, 10
+
+
+// the same with asynchronous functions
+const pipe2 = fun(x => x * x, x => x + 1);
+
+(async () => {
+  for (let value of [1, 2, 3]) {
+    for (let result of await pipe2(value)) {
+      console.log(result);
+    }
+  }
+})();
+// 2, 5, 10
+
+const {none, final} = gen;
+
+// pipe to filter odd values
+const pipe3 = gen(x => x * x, x => x + 1, x % 2 ? none : x);
+// 1, 2, 3 => 2, 10
+
+// pipe to shortcut calculations
+const pipe4 = gen(x => x * x, x % 2 ? final(x) : x, x => x + 1);
+// 1, 2, 3 => 1, 5, 9
+
+// pipe to include a source
+const pipe5 = gen([1, 2, 3], x => x * x, x => x + 1);
+
+(async () => {
+  for await (let result of pipe5()) {
+    console.log(result);
+  }
+})();
+// 2, 5, 10
+
+const fs = require('fs');
+const {promisify} = require('util');
+
+// truly asynchronous file processing
+const pipe6 = gen(
+  fs.createReadStream('streams.js'),
+  b => b.toString().replace(/a/g, 'o'),
+  s => s.replace(/m/g, 'w')
+);
+
+(async () => {
+  for await (let buf of pipe6()) {
+    // write results to stdout
+    await promisify(fs.writeSync)(1, buf);
+  }
+})();
+```
 
 ## Installation
 
