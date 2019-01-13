@@ -1,8 +1,6 @@
 'use strict';
 
 const fs = require('fs');
-const {promisify} = require('util');
-
 const gen = require('../../gen');
 
 const pipe = gen(
@@ -13,6 +11,6 @@ const pipe = gen(
 
 (async () => {
   for await (let buf of pipe()) {
-    await promisify(fs.write)(1, buf);
+    fs.writeSync(1, buf);
   }
 })();
