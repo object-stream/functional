@@ -2,13 +2,15 @@
 
 const unit = require('heya-unit');
 
+const {test} = require('./helpers');
+
 const asGen = require('../asGen');
 
 const {none, final, many} = asGen;
 
 unit.add(module, [
-  function test_gen(t) {
-    const y = t.startAsync('test_gen');
+  function test_gen_compact(t) {
+    const y = t.startAsync('test_gen_compact');
 
     const output = [];
 
@@ -20,33 +22,42 @@ unit.add(module, [
       eval(t.TEST('t.unify(output, [3, 9, 19])'));
       y.done();
     });
+  },
+  function test_gen_separate(t) {
+    const y = t.startAsync('test_gen_separate');
+
+    const pipe = asGen(x => x * x, x => 2 * x + 1);
+    const output = [];
+
+    (async () => {
+      for (let i of [1, 2, 3]) {
+        for await (let value of pipe(i)) {
+          output.push(value);
+        }
+      }
+    })().then(() => {
+      eval(t.TEST('t.unify(output, [3, 9, 19])'));
+      y.done();
+    });
+  },
+  function test_genFinal(t) {
+    test(
+      null,
+      asGen([1, 2, 3], x => x * x, x => final(x), x => 2 * x + 1),
+      [1, 4, 9],
+      t,
+      t.startAsync('test_genFinal')
+    );
+  },
+  function test_compNothing(t) {
+    test(
+      [1, 2, 3],
+      asGen(x => x * x, () => none, x => 2 * x + 1),
+      [],
+      t,
+      t.startAsync('test_compNothing')
+    );
   }
-  // function test_genFinal(t) {
-  //   const async = t.startAsync('test_genFinal');
-
-  //   const output = [],
-  //     chain = new Chain([
-  //       fromIterable([1, 2, 3]),
-  //       gen(x => x * x, x => final(x), x => 2 * x + 1),
-  //       streamToArray(output)
-  //     ]);
-
-  //   chain.on('end', () => {
-  //     eval(t.TEST('t.unify(output, [1, 4, 9])'));
-  //     async.done();
-  //   });
-  // },
-  // function test_compNothing(t) {
-  //   const async = t.startAsync('test_compNothing');
-
-  //   const output = [],
-  //     chain = new Chain([fromIterable([1, 2, 3]), gen(x => x * x, () => none, x => 2 * x + 1), streamToArray(output)]);
-
-  //   chain.on('end', () => {
-  //     eval(t.TEST('t.unify(output, [])'));
-  //     async.done();
-  //   });
-  // },
   // function test_genEmpty(t) {
   //   const async = t.startAsync('test_genEmpty');
 
