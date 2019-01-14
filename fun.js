@@ -2,7 +2,7 @@
 
 const defs = require('./defs');
 
-const next = async (value, fns, index, push) => {
+const next = async (value, fns, index, collect) => {
   for (let i = index; i <= fns.length; ++i) {
     if (value && typeof value.then == 'function') {
       // thenable
@@ -11,16 +11,16 @@ const next = async (value, fns, index, push) => {
     if (value === defs.none) break;
     if (defs.isFinal(value)) {
       const val = value.value;
-      val !== defs.none && push(val);
+      val !== defs.none && collect(val);
       break;
     }
     if (defs.isMany(value)) {
       const values = value.values;
       if (i == fns.length) {
-        values.forEach(val => push(val));
+        values.forEach(val => collect(val));
       } else {
         for (let j = 0; j < values.length; ++j) {
-          await next(values[j], fns, i, push);
+          await next(values[j], fns, i, collect);
         }
       }
       break;
@@ -34,15 +34,15 @@ const next = async (value, fns, index, push) => {
         }
         if (data.done) break;
         if (i == fns.length) {
-          push(data.value);
+          collect(data.value);
         } else {
-          await next(data.value, fns, i, push);
+          await next(data.value, fns, i, collect);
         }
       }
       break;
     }
     if (i == fns.length) {
-      push(value);
+      collect(value);
       break;
     }
     const f = fns[i];
@@ -50,7 +50,7 @@ const next = async (value, fns, index, push) => {
   }
 };
 
-const collect = collect => (...fns) => {
+const collect = (collect, fns) => {
   fns = fns.filter(fn => fn);
   if (!fns.length) fns = [x => x];
   let autoFlushed = false;
@@ -102,13 +102,14 @@ const collect = collect => (...fns) => {
 };
 
 const asArray = (...fns) => {
-  let results = [],
-    push = value => results.push(value);
-  const f = collect(push)(...fns);
+  let results = null;
+  const f = collect(value => results.push(value), fns);
   let g = async value => {
     results = [];
     await f(value);
-    return results;
+    const r = results;
+    results = null;
+    return r;
   };
   if (defs.isFlush(f)) g = defs.markFlush(g);
   if (defs.isReadOnly(f)) g = defs.markReadOnly(g);

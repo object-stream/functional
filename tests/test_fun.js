@@ -98,7 +98,7 @@ unit.add(module, [
     const y = t.startAsync('test_funCollect');
     const results = [];
     fun
-      .collect(value => results.push(value))([1, 2, 3], x => x * x, x => 2 * x + 1)()
+      .collect(value => results.push(value), [[1, 2, 3], x => x * x, x => 2 * x + 1])()
       .then(() => {
         eval(t.TEST('t.unify(results, [3, 9, 19])'));
         y.done();
