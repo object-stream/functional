@@ -109,10 +109,11 @@ The exhaustive documentation can be found in [Wiki](https://github.com/object-st
 
 ## Release History
 
+- 1.0.1 *Technical release.*
 - 1.0.0 *The initial release.*
 
-[npm-image]:      https://img.shields.io/npm/v/object-stream/functional.svg
-[npm-url]:        https://npmjs.org/package/object-stream/functional
+[npm-image]:      https://img.shields.io/npm/v/@object-stream/functional.svg
+[npm-url]:        https://npmjs.org/package/@object-stream/functional
 [deps-image]:     https://img.shields.io/david/object-stream/functional.svg
 [deps-url]:       https://david-dm.org/object-stream/functional
 [dev-deps-image]: https://img.shields.io/david/dev/object-stream/functional.svg

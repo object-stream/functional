@@ -1,6 +1,6 @@
 {
   "name": "@object-stream/functional",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Creating streams/pipelines out of modern JS functions.",
   "engines": {
     "node": ">=8"
