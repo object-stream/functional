@@ -17,8 +17,14 @@ const many = values => ({[manySymbol]: 1, values});
 
 class Flush {
   constructor(options) {
-    this.write = options.write;
-    this.flush = options.flush || (() => this.write(none));
+    options.write && (this.write = options.write);
+    options.flush && (this.flush = options.flush);
+  }
+  write (value) {
+    return value;
+  }
+  flush () {
+    return this.write(none);
   }
 }
 
