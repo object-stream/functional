@@ -2,6 +2,9 @@
   "name": "@object-stream/functional",
   "version": "1.0.0",
   "description": "Creating streams/pipelines out of modern JS functions.",
+  "engines": {
+    "node": ">=8"
+  },
   "main": "index.js",
   "scripts": {
     "debug": "node --inspect-brk tests/tests.js",

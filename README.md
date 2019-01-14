@@ -95,6 +95,8 @@ const pipe7 = gen(
 );
 ```
 
+`fun()` works on Node starting with version 8, `gen()` &mdash; 10.
+
 ## Installation
 
 ```bash
