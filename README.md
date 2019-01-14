@@ -19,7 +19,7 @@ especially making it easy to build asynchronous object processing pipelines usin
 const gen = require('@object-stream/functional');
 const fun = require('@object-stream/functional/fun');
 
-// pipe for processing numbers
+// trivial pipe for processing numbers
 const pipe1 = gen(x => x * x, x => x + 1);
 
 (async () => {
@@ -33,7 +33,7 @@ const pipe1 = gen(x => x * x, x => x + 1);
 
 
 // the same with asynchronous functions
-const pipe2 = fun(x => x * x, x => x + 1);
+const pipe2 = fun.asArray(x => x * x, x => x + 1);
 
 (async () => {
   for (let value of [1, 2, 3]) {
@@ -44,45 +44,8 @@ const pipe2 = fun(x => x * x, x => x + 1);
 })();
 // 2, 5, 10
 
-const {none, final} = gen;
-
-// pipe to filter odd values
-const pipe3 = gen(x => x * x, x => x + 1, x % 2 ? none : x);
-// 1, 2, 3 => 2, 10
-
-// pipe to shortcut calculations
-const pipe4 = gen(x => x * x, x % 2 ? final(x) : x, x => x + 1);
-// 1, 2, 3 => 1, 5, 9
-
-// pipe to include a source
-const pipe5 = gen([1, 2, 3], x => x * x, x => x + 1);
-
-(async () => {
-  for await (let result of pipe5()) {
-    console.log(result);
-  }
-})();
-// 2, 5, 10
-
-const fs = require('fs');
-const {promisify} = require('util');
-
-// truly asynchronous file processing
-const pipe6 = gen(
-  fs.createReadStream('streams.js'),
-  b => b.toString().replace(/a/g, 'o'),
-  s => s.replace(/m/g, 'w')
-);
-
-(async () => {
-  for await (let buf of pipe6()) {
-    // write results to stdout
-    await promisify(fs.writeSync)(1, buf);
-  }
-})();
-
 // using async and generators
-const pipe7 = gen(
+const pipe3 = gen(
   async id => await getRecord(id),
   record => record.parentId,
   async function* (parentId) {
@@ -93,6 +56,42 @@ const pipe7 = gen(
   },
   async record => await writeToFile(record)
 );
+
+const fs = require('fs');
+
+// truly asynchronous file processing
+const pipe4 = gen(
+  fs.createReadStream('streams.js'),
+  b => b.toString().replace(/a/g, 'o'),
+  s => s.replace(/m/g, 'w')
+);
+
+(async () => {
+  for await (let buf of pipe4()) {
+    // write results to stdout
+    fs.writeSync(1, buf);
+  }
+})();
+
+const {none, final} = gen;
+
+// pipe to filter odd values
+const pipe5 = gen(x => x * x, x => x + 1, x % 2 ? none : x);
+// 1, 2, 3 => 2, 10
+
+// pipe to shortcut calculations
+const pipe6 = fun(x => x * x, x % 2 ? final(x) : x, x => x + 1);
+// 1, 2, 3 => 1, 5, 9
+
+// pipe to include a source
+const pipe7 = gen([1, 2, 3], x => x * x, x => x + 1);
+
+(async () => {
+  for await (let result of pipe7()) {
+    console.log(result);
+  }
+})();
+// 2, 5, 10
 ```
 
 `fun()` works on Node starting with version 8, `gen()` &mdash; 10.
