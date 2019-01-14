@@ -50,7 +50,7 @@ const next = async (value, fns, index, push) => {
   }
 };
 
-const asArray = (...fns) => {
+const collect = collect => (...fns) => {
   fns = fns.filter(fn => fn);
   if (!fns.length) fns = [x => x];
   let autoFlushed = false;
@@ -68,8 +68,6 @@ const asArray = (...fns) => {
     return defs.markReadOnly(
       defs.markFlush(async () => {
         if (flushed) throw Error('Call to a flushed pipe.');
-        const results = [],
-          collect = value => results.push(value);
         await next(undefined, fns, 0, collect);
         flushed = true;
         for (let i = 0; i < fns.length; ++i) {
@@ -80,14 +78,11 @@ const asArray = (...fns) => {
             await next(f(defs.none), fns, i + 1, collect);
           }
         }
-        return results;
       })
     );
   }
   return defs.markFlush(async value => {
     if (flushed) throw Error('Call to a flushed pipe.');
-    const results = [],
-      collect = value => results.push(value);
     if (value !== defs.none) {
       await next(value, fns, 0, collect);
     } else {
@@ -103,8 +98,21 @@ const asArray = (...fns) => {
         }
       }
     }
-    return results;
   });
+};
+
+const asArray = (...fns) => {
+  let results = [],
+    push = value => results.push(value);
+  const f = collect(push)(...fns);
+  let g = async value => {
+    results = [];
+    await f(value);
+    return results;
+  };
+  if (defs.isFlush(f)) g = defs.markFlush(g);
+  if (defs.isReadOnly(f)) g = defs.markReadOnly(g);
+  return g;
 };
 
 const fun = (...fns) => {
@@ -125,6 +133,7 @@ const fun = (...fns) => {
 };
 
 fun.next = next;
+fun.collect = collect;
 fun.asArray = asArray;
 
 Object.assign(fun, defs);

@@ -94,6 +94,16 @@ unit.add(module, [
         y.done();
       });
   },
+  function test_funCollect(t) {
+    const y = t.startAsync('test_funCollect');
+    const results = [];
+    fun
+      .collect(value => results.push(value))([1, 2, 3], x => x * x, x => 2 * x + 1)()
+      .then(() => {
+        eval(t.TEST('t.unify(results, [3, 9, 19])'));
+        y.done();
+      });
+  },
   function test_funFlush(t) {
     let acc = 0;
     test([1, 2, 3], fun(x => x * x, flush(x => ((acc += x), none), () => acc)), [14], t, t.startAsync('test_funFlush'));
