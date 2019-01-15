@@ -46,7 +46,7 @@ const next = async (value, fns, index, collect) => {
       break;
     }
     const f = fns[i];
-    value = f instanceof defs.Flush ? f.write(value) : f(value);
+    value = f instanceof defs.StreamLike ? f.write(value) : f(value);
   }
 };
 
@@ -65,14 +65,14 @@ const collect = (collect, fns) => {
   }
   let flushed = false;
   if (autoFlushed) {
-    return defs.markReadOnly(
-      defs.markFlush(async () => {
+    return defs.markAsReadOnly(
+      defs.markAsFlush(async () => {
         if (flushed) throw Error('Call to a flushed pipe.');
         await next(undefined, fns, 0, collect);
         flushed = true;
         for (let i = 0; i < fns.length; ++i) {
           const f = fns[i];
-          if (f instanceof defs.Flush) {
+          if (f instanceof defs.StreamLike) {
             await next(f.flush(), fns, i + 1, collect);
           } else if (defs.isFlush(f)) {
             await next(f(defs.none), fns, i + 1, collect);
@@ -81,7 +81,7 @@ const collect = (collect, fns) => {
       })
     );
   }
-  return defs.markFlush(async value => {
+  return defs.markAsFlush(async value => {
     if (flushed) throw Error('Call to a flushed pipe.');
     if (value !== defs.none) {
       await next(value, fns, 0, collect);
@@ -89,7 +89,7 @@ const collect = (collect, fns) => {
       flushed = true;
       for (let i = 0; i < fns.length; ++i) {
         const f = fns[i];
-        if (f instanceof defs.Flush) {
+        if (f instanceof defs.StreamLike) {
           debugger;
           await next(f.flush(), fns, i + 1, collect);
         } else if (defs.isFlush(f)) {
@@ -111,8 +111,8 @@ const asArray = (...fns) => {
     results = null;
     return r;
   };
-  if (defs.isFlush(f)) g = defs.markFlush(g);
-  if (defs.isReadOnly(f)) g = defs.markReadOnly(g);
+  if (defs.isFlush(f)) g = defs.markAsFlush(g);
+  if (defs.isReadOnly(f)) g = defs.markAsReadOnly(g);
   return g;
 };
 
@@ -128,8 +128,8 @@ const fun = (...fns) => {
       }
       return defs.many(results);
     });
-  if (defs.isFlush(f)) g = defs.markFlush(g);
-  if (defs.isReadOnly(f)) g = defs.markReadOnly(g);
+  if (defs.isFlush(f)) g = defs.markAsFlush(g);
+  if (defs.isReadOnly(f)) g = defs.markAsReadOnly(g);
   return g;
 };
 
