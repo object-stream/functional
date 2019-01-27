@@ -1,7 +1,7 @@
 'use strict';
 
-const {none} = require('../defs');
+const {stop} = require('../defs');
 
-const take = n => value => (n > 0 ? (--n, value) : none);
+const take = (n, finalValue = stop) => value => (n > 0 ? (--n, value) : finalValue);
 
 module.exports = take;

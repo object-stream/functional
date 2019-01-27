@@ -1,7 +1,8 @@
 'use strict';
 
-const {none} = require('../defs');
+const {none, stop} = require('../defs');
 
-const takeWithSkip = (n, skip) => value => (skip > 0 ? (--skip, none) : n > 0 ? (--n, value) : none);
+const takeWithSkip = (n, skip = 0, finalValue = stop) => value =>
+  skip > 0 ? (--skip, none) : n > 0 ? (--n, value) : finalValue;
 
 module.exports = takeWithSkip;

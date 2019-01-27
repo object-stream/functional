@@ -9,9 +9,9 @@ const next = async (value, fns, index, collect) => {
       value = await value;
     }
     if (value === defs.none) break;
+    if (value === defs.stop) throw new defs.Stop();
     if (defs.isFinal(value)) {
-      const val = value.value;
-      val !== defs.none && collect(val);
+      collect(value.value);
       break;
     }
     if (defs.isMany(value)) {
@@ -68,7 +68,12 @@ const collect = (collect, fns) => {
     return defs.markAsReadOnly(
       defs.markAsFlush(async () => {
         if (flushed) throw Error('Call to a flushed pipe.');
-        await next(undefined, fns, 0, collect);
+        try {
+          await next(undefined, fns, 0, collect);
+        } catch (error) {
+          if (!(error instanceof defs.Stop)) throw error;
+          // do nothing for Stop
+        }
         flushed = true;
         for (let i = 0; i < fns.length; ++i) {
           const f = fns[i];

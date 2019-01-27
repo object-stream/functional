@@ -1,4 +1,5 @@
 const none = Symbol.for('object-stream.none');
+const stop = Symbol.for('object-stream.stop');
 const finalSymbol = Symbol.for('object-stream.final');
 const manySymbol = Symbol.for('object-stream.many');
 const flushSymbol = Symbol.for('object-stream.flush');
@@ -20,14 +21,30 @@ class StreamLike {
     options.write && (this.write = options.write);
     options.flush && (this.flush = options.flush);
   }
-  write (value) {
+  write(value) {
     return value;
   }
-  flush () {
+  flush() {
     return this.write(none);
   }
 }
 
 const flush = (write, flush = null) => new StreamLike({write, flush});
 
-module.exports = {none, final, many, flush, StreamLike, isFinal, isMany, isFlush, isReadOnly, markAsFlush, markAsReadOnly};
+class Stop extends Error {}
+
+module.exports = {
+  none,
+  stop,
+  final,
+  many,
+  flush,
+  Stop,
+  StreamLike,
+  isFinal,
+  isMany,
+  isFlush,
+  isReadOnly,
+  markAsFlush,
+  markAsReadOnly
+};

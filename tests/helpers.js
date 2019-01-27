@@ -1,4 +1,4 @@
-const {none, isMany} = require('../defs');
+const {none, Stop, isMany} = require('../defs');
 
 const test = (source, pipe, result, t, y) => {
   let p;
@@ -6,11 +6,16 @@ const test = (source, pipe, result, t, y) => {
     p = async () => {
       const output = [];
       for (let x of source) {
-        const value = await pipe(x);
-        if (isMany(value)) {
-          output.push(...value.values);
-        } else if (value !== none) {
-          output.push(value);
+        try {
+          const value = await pipe(x);
+          if (isMany(value)) {
+            output.push(...value.values);
+          } else if (value !== none) {
+            output.push(value);
+          }
+        } catch (error) {
+          if (error instanceof Stop) break;
+          throw error;
         }
       }
       const value = await pipe(none);
