@@ -3,8 +3,8 @@
 [![Build status][travis-image]][travis-url]
 [![Dependencies][deps-image]][deps-url]
 [![devDependencies][dev-deps-image]][dev-deps-url]
+[![Greenkeeper badge](https://badges.greenkeeper.io/object-stream/functional.svg)](https://greenkeeper.io/)
 [![NPM version][npm-image]][npm-url]
-
 
 `@object-stream/functional` creates a chain out of regular functions, asynchronous functions, generator functions
 and asynchronous generator functions. The resulting chain is represented as an asynchronous function or
