@@ -1,5 +1,7 @@
 # object-stream/functional
 
+[![Greenkeeper badge](https://badges.greenkeeper.io/object-stream/functional.svg)](https://greenkeeper.io/)
+
 [![Build status][travis-image]][travis-url]
 [![Dependencies][deps-image]][deps-url]
 [![devDependencies][dev-deps-image]][dev-deps-url]
