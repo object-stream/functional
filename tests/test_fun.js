@@ -7,9 +7,6 @@ const fun = require('../fun');
 const {none, final, many, flush} = fun;
 
 unit.add(module, [
-  function test_fun_compact(t) {
-    test(null, fun([1, 2, 3], x => x * x, x => 2 * x + 1), [3, 9, 19], t, t.startAsync('test_fun_compact'));
-  },
   function test_fun_separate(t) {
     test([1, 2, 3], fun(x => x * x, x => 2 * x + 1), [3, 9, 19], t, t.startAsync('test_fun_separate'));
   },
@@ -86,23 +83,20 @@ unit.add(module, [
     );
   },
   function test_funAsArray(t) {
-    const y = t.startAsync('test_funAsArray');
-    fun
-      .asArray([1, 2, 3], x => x * x, x => 2 * x + 1)()
-      .then(output => {
-        eval(t.TEST('t.unify(output, [3, 9, 19])'));
-        y.done();
-      });
+    test([1, 2, 3], fun(x => x * x, x => 2 * x + 1), [3, 9, 19], t, t.startAsync('test_funAsArray'));
   },
   function test_funCollect(t) {
     const y = t.startAsync('test_funCollect');
     const results = [];
-    fun
-      .collect(value => results.push(value), [[1, 2, 3], x => x * x, x => 2 * x + 1])()
-      .then(() => {
-        eval(t.TEST('t.unify(results, [3, 9, 19])'));
-        y.done();
-      });
+    const pipe = fun.collect(value => results.push(value), [x => x * x, x => 2 * x + 1]);
+    (async () => {
+      for (let value of [1, 2, 3]) {
+        pipe(value);
+      }
+    })().then(() => {
+      eval(t.TEST('t.unify(results, [3, 9, 19])'));
+      y.done();
+    });
   },
   function test_funFlush(t) {
     let acc = 0;
@@ -121,8 +115,8 @@ unit.add(module, [
   function test_funFlushShort(t) {
     let acc = 0;
     test(
-      null,
-      fun([1, 2, 3], x => x * x, flush(x => (x !== none ? ((acc += x), none) : acc))),
+      [1, 2, 3],
+      fun(x => x * x, flush(x => (x !== none ? ((acc += x), none) : acc))),
       [14],
       t,
       t.startAsync('test_funFlushShort')

@@ -53,39 +53,7 @@ const next = async (value, fns, index, collect) => {
 const collect = (collect, fns) => {
   fns = fns.filter(fn => fn);
   if (!fns.length) fns = [x => x];
-  let autoFlushed = false;
-  if (Symbol.asyncIterator && typeof fns[0][Symbol.asyncIterator] == 'function') {
-    const f = fns[0];
-    fns[0] = () => f[Symbol.asyncIterator]();
-    autoFlushed = true;
-  } else if (Symbol.iterator && typeof fns[0][Symbol.iterator] == 'function') {
-    const f = fns[0];
-    fns[0] = () => f[Symbol.iterator]();
-    autoFlushed = true;
-  }
   let flushed = false;
-  if (autoFlushed) {
-    return defs.markAsReadOnly(
-      defs.markAsFlush(async () => {
-        if (flushed) throw Error('Call to a flushed pipe.');
-        try {
-          await next(undefined, fns, 0, collect);
-        } catch (error) {
-          if (!(error instanceof defs.Stop)) throw error;
-          // do nothing for Stop
-        }
-        flushed = true;
-        for (let i = 0; i < fns.length; ++i) {
-          const f = fns[i];
-          if (f instanceof defs.StreamLike) {
-            await next(f.flush(), fns, i + 1, collect);
-          } else if (defs.isFlush(f)) {
-            await next(f(defs.none), fns, i + 1, collect);
-          }
-        }
-      })
-    );
-  }
   return defs.markAsFlush(async value => {
     if (flushed) throw Error('Call to a flushed pipe.');
     if (value !== defs.none) {
@@ -95,10 +63,8 @@ const collect = (collect, fns) => {
       for (let i = 0; i < fns.length; ++i) {
         const f = fns[i];
         if (f instanceof defs.StreamLike) {
-          debugger;
           await next(f.flush(), fns, i + 1, collect);
         } else if (defs.isFlush(f)) {
-          debugger;
           await next(f(defs.none), fns, i + 1, collect);
         }
       }
@@ -117,7 +83,6 @@ const asArray = (...fns) => {
     return r;
   };
   if (defs.isFlush(f)) g = defs.markAsFlush(g);
-  if (defs.isReadOnly(f)) g = defs.markAsReadOnly(g);
   return g;
 };
 
@@ -134,7 +99,6 @@ const fun = (...fns) => {
       return defs.many(results);
     });
   if (defs.isFlush(f)) g = defs.markAsFlush(g);
-  if (defs.isReadOnly(f)) g = defs.markAsReadOnly(g);
   return g;
 };
 

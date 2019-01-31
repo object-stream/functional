@@ -3,15 +3,12 @@ const stop = Symbol.for('object-stream.stop');
 const finalSymbol = Symbol.for('object-stream.final');
 const manySymbol = Symbol.for('object-stream.many');
 const flushSymbol = Symbol.for('object-stream.flush');
-const readOnlySymbol = Symbol.for('object-stream.readOnly');
 
 const isFinal = o => o && o[finalSymbol] === 1;
 const isMany = o => o && o[manySymbol] === 1;
 const isFlush = o => o && o[flushSymbol] === 1;
-const isReadOnly = o => o && o[readOnlySymbol] === 1;
 
 const markAsFlush = o => ((o[flushSymbol] = 1), o);
-const markAsReadOnly = o => ((o[readOnlySymbol] = 1), o);
 
 const final = value => ({[finalSymbol]: 1, value});
 const many = values => ({[manySymbol]: 1, values});
@@ -44,7 +41,5 @@ module.exports = {
   isFinal,
   isMany,
   isFlush,
-  isReadOnly,
-  markAsFlush,
-  markAsReadOnly
+  markAsFlush
 };

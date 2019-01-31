@@ -53,39 +53,7 @@ const next = async function*(value, fns, index) {
 const gen = (...fns) => {
   fns = fns.filter(fn => fn);
   if (!fns.length) fns = [x => x];
-  let autoFlushed = false;
-  if (Symbol.asyncIterator && typeof fns[0][Symbol.asyncIterator] == 'function') {
-    const f = fns[0];
-    fns[0] = () => f[Symbol.asyncIterator]();
-    autoFlushed = true;
-  } else if (Symbol.iterator && typeof fns[0][Symbol.iterator] == 'function') {
-    const f = fns[0];
-    fns[0] = () => f[Symbol.iterator]();
-    autoFlushed = true;
-  }
   let flushed = false;
-  if (autoFlushed) {
-    return defs.markAsReadOnly(
-      defs.markAsFlush(async function*() {
-        if (flushed) throw Error('Call to a flushed pipe.');
-        try {
-          yield* next(undefined, fns, 0);
-        } catch (error) {
-          if (!(error instanceof defs.Stop)) throw error;
-          // do nothing for Stop
-        }
-        flushed = true;
-        for (let i = 0; i < fns.length; ++i) {
-          const f = fns[i];
-          if (f instanceof defs.StreamLike) {
-            yield* next(f.flush(), fns, i + 1);
-          } else if (defs.isFlush(f)) {
-            yield* next(f(defs.none), fns, i + 1);
-          }
-        }
-      })
-    );
-  }
   return defs.markAsFlush(async function*(value) {
     if (flushed) throw Error('Call to a flushed pipe.');
     if (value !== defs.none) {

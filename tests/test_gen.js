@@ -8,20 +8,6 @@ const gen = require('../gen');
 const {none, final, many, flush} = gen;
 
 unit.add(module, [
-  function test_gen_compact(t) {
-    const y = t.startAsync('test_gen_compact');
-
-    const output = [];
-
-    (async () => {
-      for await (let value of gen([1, 2, 3], x => x * x, x => 2 * x + 1)()) {
-        output.push(value);
-      }
-    })().then(() => {
-      eval(t.TEST('t.unify(output, [3, 9, 19])'));
-      y.done();
-    });
-  },
   function test_gen_separate(t) {
     const y = t.startAsync('test_gen_separate');
 
@@ -40,7 +26,7 @@ unit.add(module, [
     });
   },
   function test_genFinal(t) {
-    test(null, gen([1, 2, 3], x => x * x, x => final(x), x => 2 * x + 1), [1, 4, 9], t, t.startAsync('test_genFinal'));
+    test([1, 2, 3], gen(x => x * x, x => final(x), x => 2 * x + 1), [1, 4, 9], t, t.startAsync('test_genFinal'));
   },
   function test_compNothing(t) {
     test([1, 2, 3], gen(x => x * x, () => none, x => 2 * x + 1), [], t, t.startAsync('test_compNothing'));
@@ -145,8 +131,8 @@ unit.add(module, [
   function test_genFlushShort(t) {
     let acc = 0;
     test(
-      null,
-      gen([1, 2, 3], x => x * x, flush(x => (x !== none ? ((acc += x), none) : acc))),
+      [1, 2, 3],
+      gen(x => x * x, flush(x => (x !== none ? ((acc += x), none) : acc))),
       [14],
       t,
       t.startAsync('test_genFlushShort')
