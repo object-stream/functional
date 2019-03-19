@@ -1,24 +1,29 @@
-const {none} = require('../defs');
+const {none, Stop} = require('../defs');
 
 const test = (source, pipe, result, t, y) => {
   let p;
   if (source) {
     p = async () => {
       const output = [];
-      for (let x of source) {
-        for await (let v of pipe(x)) {
+      try {
+        for (const x of source) {
+          for await (const v of pipe(x)) {
+            output.push(v);
+          }
+        }
+      } catch (error) {
+        if (!(error instanceof Stop)) throw error;
+      } finally {
+        for await (const v of pipe(none)) {
           output.push(v);
         }
-      }
-      for await (let v of pipe(none)) {
-        output.push(v);
       }
       return output;
     };
   } else {
     p = async () => {
       const output = [];
-      for await (let v of pipe()) {
+      for await (const v of pipe()) {
         output.push(v);
       }
       return output;
