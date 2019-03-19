@@ -10,7 +10,7 @@ const next = async function*(value, fns, index) {
     }
     if (value === defs.none) break;
     if (value === defs.stop) throw new defs.Stop();
-    if (defs.isFinal(value)) {
+    if (defs.isFinalValue(value)) {
       yield value.value;
       break;
     }
@@ -46,7 +46,7 @@ const next = async function*(value, fns, index) {
       break;
     }
     const f = fns[i];
-    value = f instanceof defs.StreamLike ? f.write(value) : f(value);
+    value = f(value);
   }
 };
 
@@ -54,7 +54,7 @@ const gen = (...fns) => {
   fns = fns.filter(fn => fn);
   if (!fns.length) fns = [x => x];
   let flushed = false;
-  return defs.markAsFlush(async function*(value) {
+  return defs.flushable(async function*(value) {
     if (flushed) throw Error('Call to a flushed pipe.');
     if (value !== defs.none) {
       yield* next(value, fns, 0);
@@ -62,9 +62,7 @@ const gen = (...fns) => {
       flushed = true;
       for (let i = 0; i < fns.length; ++i) {
         const f = fns[i];
-        if (f instanceof defs.StreamLike) {
-          yield* next(f.flush(), fns, i + 1);
-        } else if (defs.isFlush(f)) {
+        if (defs.isFlushable(f)) {
           yield* next(f(defs.none), fns, i + 1);
         }
       }

@@ -73,14 +73,14 @@ const pipe4 = gen(
   }
 })();
 
-const {none, final} = gen;
+const {none, finalValue} = gen;
 
 // pipe to filter odd values
 const pipe5 = gen(x => x * x, x => x + 1, x % 2 ? none : x);
 // 1, 2, 3 => 2, 10
 
 // pipe to shortcut calculations
-const pipe6 = fun(x => x * x, x % 2 ? final(x) : x, x => x + 1);
+const pipe6 = fun(x => x * x, x % 2 ? finalValue(x) : x, x => x + 1);
 // 1, 2, 3 => 1, 5, 9
 
 // pipe to include a source

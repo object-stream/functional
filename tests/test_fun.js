@@ -4,14 +4,14 @@ const unit = require('heya-unit');
 const {test, delay} = require('./helpers');
 const fun = require('../fun');
 
-const {none, final, many, flush} = fun;
+const {none, finalValue, many, flushable} = fun;
 
 unit.add(module, [
   function test_fun_separate(t) {
     test([1, 2, 3], fun(x => x * x, x => 2 * x + 1), [3, 9, 19], t, t.startAsync('test_fun_separate'));
   },
   function test_funFinal(t) {
-    test([1, 2, 3], fun(x => x * x, x => final(x), x => 2 * x + 1), [1, 4, 9], t, t.startAsync('test_funFinal'));
+    test([1, 2, 3], fun(x => x * x, x => finalValue(x), x => 2 * x + 1), [1, 4, 9], t, t.startAsync('test_funFinal'));
   },
   function test_funNothing(t) {
     test([1, 2, 3], fun(x => x * x, () => none, x => 2 * x + 1), [], t, t.startAsync('test_funNothing'));
@@ -73,7 +73,7 @@ unit.add(module, [
         x => many([x, x * 10]),
         function*(x) {
           yield x;
-          yield final(x - 1);
+          yield finalValue(x - 1);
         },
         x => -x
       ),
@@ -100,13 +100,13 @@ unit.add(module, [
   },
   function test_funFlush(t) {
     let acc = 0;
-    test([1, 2, 3], fun(x => x * x, flush(x => ((acc += x), none), () => acc)), [14], t, t.startAsync('test_funFlush'));
+    test([1, 2, 3], fun(x => x * x, flushable(x => ((acc += x), none), () => acc)), [14], t, t.startAsync('test_funFlush'));
   },
   function test_funFlushCompact(t) {
     let acc = 0;
     test(
       [1, 2, 3],
-      fun(x => x * x, flush(x => ((acc += x), none), () => acc)),
+      fun(x => x * x, flushable(x => ((acc += x), none), () => acc)),
       [14],
       t,
       t.startAsync('test_funFlushCompact')
@@ -116,7 +116,7 @@ unit.add(module, [
     let acc = 0;
     test(
       [1, 2, 3],
-      fun(x => x * x, flush(x => (x !== none ? ((acc += x), none) : acc))),
+      fun(x => x * x, flushable(x => (x !== none ? ((acc += x), none) : acc))),
       [14],
       t,
       t.startAsync('test_funFlushShort')
@@ -126,7 +126,7 @@ unit.add(module, [
     let acc = 0;
     test(
       [1, 2, 3],
-      fun(fun(x => x * x, flush(x => ((acc += x), none), () => acc)), x => x + 1),
+      fun(fun(x => x * x, flushable(x => ((acc += x), none), () => acc)), x => x + 1),
       [15],
       t,
       t.startAsync('test_funFlushEmbed')

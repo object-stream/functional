@@ -1,9 +1,9 @@
 'use strict';
 
-const {none, markAsFlush} = require('../defs');
+const {none, flushable} = require('../defs');
 
 const fold = (f, acc) =>
-  markAsFlush(value => {
+  flushable(value => {
     if (value === none) return acc;
     const result = f(acc, value);
     if (result && typeof result.then == 'function') {

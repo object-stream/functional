@@ -10,7 +10,7 @@ const next = async (value, fns, index, collect) => {
     }
     if (value === defs.none) break;
     if (value === defs.stop) throw new defs.Stop();
-    if (defs.isFinal(value)) {
+    if (defs.isFinalValue(value)) {
       collect(value.value);
       break;
     }
@@ -46,7 +46,7 @@ const next = async (value, fns, index, collect) => {
       break;
     }
     const f = fns[i];
-    value = f instanceof defs.StreamLike ? f.write(value) : f(value);
+    value = f(value);
   }
 };
 
@@ -54,7 +54,7 @@ const collect = (collect, fns) => {
   fns = fns.filter(fn => fn);
   if (!fns.length) fns = [x => x];
   let flushed = false;
-  return defs.markAsFlush(async value => {
+  return defs.flushable(async value => {
     if (flushed) throw Error('Call to a flushed pipe.');
     if (value !== defs.none) {
       await next(value, fns, 0, collect);
@@ -62,9 +62,7 @@ const collect = (collect, fns) => {
       flushed = true;
       for (let i = 0; i < fns.length; ++i) {
         const f = fns[i];
-        if (f instanceof defs.StreamLike) {
-          await next(f.flush(), fns, i + 1, collect);
-        } else if (defs.isFlush(f)) {
+        if (defs.isFlushable(f)) {
           await next(f(defs.none), fns, i + 1, collect);
         }
       }
@@ -82,7 +80,7 @@ const asArray = (...fns) => {
     results = null;
     return r;
   };
-  if (defs.isFlush(f)) g = defs.markAsFlush(g);
+  if (defs.isFlushable(f)) g = defs.flushable(g);
   return g;
 };
 
@@ -98,7 +96,7 @@ const fun = (...fns) => {
       }
       return defs.many(results);
     });
-  if (defs.isFlush(f)) g = defs.markAsFlush(g);
+  if (defs.isFlushable(f)) g = defs.flushable(g);
   return g;
 };
 

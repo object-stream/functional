@@ -5,7 +5,7 @@ const {delay} = require('./helpers');
 const {test} = require('./helpers-gen');
 const gen = require('../gen');
 
-const {none, final, many, flush} = gen;
+const {none, finalValue, many, flushable} = gen;
 
 unit.add(module, [
   function test_gen_separate(t) {
@@ -26,7 +26,7 @@ unit.add(module, [
     });
   },
   function test_genFinal(t) {
-    test([1, 2, 3], gen(x => x * x, x => final(x), x => 2 * x + 1), [1, 4, 9], t, t.startAsync('test_genFinal'));
+    test([1, 2, 3], gen(x => x * x, x => finalValue(x), x => 2 * x + 1), [1, 4, 9], t, t.startAsync('test_genFinal'));
   },
   function test_compNothing(t) {
     test([1, 2, 3], gen(x => x * x, () => none, x => 2 * x + 1), [], t, t.startAsync('test_compNothing'));
@@ -88,7 +88,7 @@ unit.add(module, [
         x => many([x, x * 10]),
         function*(x) {
           yield x;
-          yield final(x - 1);
+          yield finalValue(x - 1);
         },
         x => -x
       ),
@@ -105,7 +105,7 @@ unit.add(module, [
         x => many([x, x * 10]),
         async function*(x) {
           yield delay(x => x)(x);
-          yield delay(x => final(x - 1))(x);
+          yield delay(x => finalValue(x - 1))(x);
         },
         x => -x
       ),
@@ -116,13 +116,13 @@ unit.add(module, [
   },
   function test_genFlush(t) {
     let acc = 0;
-    test([1, 2, 3], gen(x => x * x, flush(x => ((acc += x), none), () => acc)), [14], t, t.startAsync('test_genFlush'));
+    test([1, 2, 3], gen(x => x * x, flushable(x => ((acc += x), none), () => acc)), [14], t, t.startAsync('test_genFlush'));
   },
   function test_genFlushCompact(t) {
     let acc = 0;
     test(
       [1, 2, 3],
-      gen(x => x * x, flush(x => ((acc += x), none), () => acc)),
+      gen(x => x * x, flushable(x => ((acc += x), none), () => acc)),
       [14],
       t,
       t.startAsync('test_genFlushCompact')
@@ -132,7 +132,7 @@ unit.add(module, [
     let acc = 0;
     test(
       [1, 2, 3],
-      gen(x => x * x, flush(x => (x !== none ? ((acc += x), none) : acc))),
+      gen(x => x * x, flushable(x => (x !== none ? ((acc += x), none) : acc))),
       [14],
       t,
       t.startAsync('test_genFlushShort')
@@ -142,7 +142,7 @@ unit.add(module, [
     let acc = 0;
     test(
       [1, 2, 3],
-      gen(gen(x => x * x, flush(x => ((acc += x), none), () => acc)), x => x + 1),
+      gen(gen(x => x * x, flushable(x => ((acc += x), none), () => acc)), x => x + 1),
       [15],
       t,
       t.startAsync('test_genFlushEmbed')
