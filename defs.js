@@ -20,14 +20,4 @@ const flushable = (write, final = null) => {
 
 class Stop extends Error {}
 
-module.exports = {
-  none,
-  stop,
-  many,
-  finalValue,
-  flushable,
-  Stop,
-  isFinalValue,
-  isMany,
-  isFlushable
-};
+module.exports = {none, stop, many, finalValue, flushable, Stop, isFinalValue, isMany, isFlushable};
