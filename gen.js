@@ -10,11 +10,11 @@ const next = async function*(value, fns, index) {
     }
     if (value === defs.none) break;
     if (value === defs.stop) throw new defs.Stop();
-    if (defs.isFinalValue(value)) {
+    if (value && value[defs.finalSymbol] === 1) {
       yield value.value;
       break;
     }
-    if (defs.isMany(value)) {
+    if (value && value[defs.manySymbol] === 1) {
       const values = value.values;
       if (i == fns.length) {
         yield* values;
@@ -54,7 +54,7 @@ const gen = (...fns) => {
   fns = fns.filter(fn => fn);
   if (!fns.length) fns = [x => x];
   let flushed = false;
-  return defs.flushable(async function*(value) {
+  const g = async function*(value) {
     if (flushed) throw Error('Call to a flushed pipe.');
     if (value !== defs.none) {
       yield* next(value, fns, 0);
@@ -62,12 +62,14 @@ const gen = (...fns) => {
       flushed = true;
       for (let i = 0; i < fns.length; ++i) {
         const f = fns[i];
-        if (defs.isFlushable(f)) {
+        if (f[defs.flushSymbol] === 1) {
           yield* next(f(defs.none), fns, i + 1);
         }
       }
     }
-  });
+  };
+  const needToFlush = fns.some(fn => fn[defs.flushSymbol] === 1);
+  return needToFlush ? defs.flushable(g) : g;
 };
 
 gen.next = next;
