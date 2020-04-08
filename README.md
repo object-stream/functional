@@ -109,6 +109,7 @@ The exhaustive documentation can be found in [Wiki](https://github.com/object-st
 
 ## Release History
 
+- 1.2.0 *Added `stop` and the documentation.*
 - 1.1.0 *Added popular utilities: fold, scan, skip and take.*
 - 1.0.1 *Technical release.*
 - 1.0.0 *The initial release.*

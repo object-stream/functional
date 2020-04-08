@@ -3,50 +3,71 @@
 const defs = require('./defs');
 
 const next = async (value, fns, index, collect) => {
-  for (let i = index; i <= fns.length; ++i) {
-    if (value && typeof value.then == 'function') {
-      // thenable
-      value = await value;
-    }
-    if (value === defs.none) break;
-    if (value === defs.stop) throw new defs.Stop();
-    if (value && value[defs.finalSymbol] === 1) {
-      collect(value.value);
-      break;
-    }
-    if (value && value[defs.manySymbol] === 1) {
-      const values = value.values;
-      if (i == fns.length) {
-        values.forEach(val => collect(val));
-      } else {
-        for (let j = 0; j < values.length; ++j) {
-          await next(values[j], fns, i, collect);
-        }
+  let cleanIndex;
+  try {
+    for (let i = index; i <= fns.length; ++i) {
+      if (value && typeof value.then == 'function') {
+        // thenable
+        value = await value;
       }
-      break;
-    }
-    if (value && typeof value.next == 'function') {
-      // generator
-      for (;;) {
-        let data = value.next();
-        if (data && typeof data.then == 'function') {
-          data = await data;
-        }
-        if (data.done) break;
+      if (value === defs.none) break;
+      if (value === defs.stop) {
+        cleanIndex = i - 1;
+        throw new defs.Stop();
+      }
+      if (value && value[defs.finalSymbol] === 1) {
+        collect(value.value);
+        break;
+      }
+      if (value && value[defs.manySymbol] === 1) {
+        const values = value.values;
         if (i == fns.length) {
-          collect(data.value);
+          values.forEach(val => collect(val));
         } else {
-          await next(data.value, fns, i, collect);
+          for (let j = 0; j < values.length; ++j) {
+            await next(values[j], fns, i, collect);
+          }
         }
+        break;
       }
-      break;
+      if (value && typeof value.next == 'function') {
+        // generator
+        for (;;) {
+          let data = value.next();
+          if (data && typeof data.then == 'function') {
+            data = await data;
+          }
+          if (data.done) break;
+          if (i == fns.length) {
+            collect(data.value);
+          } else {
+            await next(data.value, fns, i, collect);
+          }
+        }
+        break;
+      }
+      if (i == fns.length) {
+        collect(value);
+        break;
+      }
+      const f = fns[i];
+      cleanIndex = i + 1;
+      value = f(value);
     }
-    if (i == fns.length) {
-      collect(value);
-      break;
+  } catch(error) {
+    if (error instanceof defs.Stop) {
+      flush(fns, cleanIndex, collect);
     }
+    throw error;
+  }
+};
+
+const flush = async (fns, index, collect) => {
+  for (let i = index; i < fns.length; ++i) {
     const f = fns[i];
-    value = f(value);
+    if (f[defs.flushSymbol] === 1) {
+      await next(f(defs.none), fns, i + 1, collect);
+    }
   }
 };
 
@@ -68,12 +89,7 @@ const collect = (collect, fns) => {
       await next(value, fns, 0, collect);
     } else {
       flushed = true;
-      for (let i = 0; i < fns.length; ++i) {
-        const f = fns[i];
-        if (f[defs.flushSymbol] === 1) {
-          await next(f(defs.none), fns, i + 1, collect);
-        }
-      }
+      flush(fns, 0, collect);
     }
   };
   const needToFlush = fns.some(fn => fn[defs.flushSymbol] === 1);
