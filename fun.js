@@ -56,7 +56,7 @@ const next = async (value, fns, index, collect) => {
     }
   } catch (error) {
     if (error instanceof defs.Stop) {
-      flush(fns, cleanIndex, collect);
+      await flush(fns, cleanIndex, collect);
     }
     throw error;
   }
@@ -89,7 +89,7 @@ const collect = (collect, fns) => {
       await next(value, fns, 0, collect);
     } else {
       flushed = true;
-      flush(fns, 0, collect);
+      await flush(fns, 0, collect);
     }
   };
   const needToFlush = fns.some(fn => fn[defs.flushSymbol] === 1);
