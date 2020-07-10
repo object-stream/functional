@@ -1,10 +1,7 @@
-# object-stream/functional
+# object-stream/functional [![NPM version][npm-img]][npm-url]
 
-[![Build status][travis-image]][travis-url]
-[![Dependencies][deps-image]][deps-url]
-[![devDependencies][dev-deps-image]][dev-deps-url]
-[![Greenkeeper badge](https://badges.greenkeeper.io/object-stream/functional.svg)](https://greenkeeper.io/)
-[![NPM version][npm-image]][npm-url]
+[npm-img]: https://img.shields.io/npm/v/@object-stream/functional.svg
+[npm-url]: https://npmjs.org/package/@object-stream/functional
 
 `@object-stream/functional` creates a chain out of regular functions, asynchronous functions, generator functions
 and asynchronous generator functions. The resulting chain is represented as an asynchronous function or
@@ -113,12 +110,3 @@ The exhaustive documentation can be found in [Wiki](https://github.com/object-st
 - 1.1.0 *Added popular utilities: fold, scan, skip and take.*
 - 1.0.1 *Technical release.*
 - 1.0.0 *The initial release.*
-
-[npm-image]:      https://img.shields.io/npm/v/@object-stream/functional.svg
-[npm-url]:        https://npmjs.org/package/@object-stream/functional
-[deps-image]:     https://img.shields.io/david/object-stream/functional.svg
-[deps-url]:       https://david-dm.org/object-stream/functional
-[dev-deps-image]: https://img.shields.io/david/dev/object-stream/functional.svg
-[dev-deps-url]:   https://david-dm.org/object-stream/functional?type=dev
-[travis-image]:   https://img.shields.io/travis/object-stream/functional.svg
-[travis-url]:     https://travis-ci.org/object-stream/functional
