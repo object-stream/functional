@@ -54,7 +54,7 @@ const next = async (value, fns, index, collect) => {
       cleanIndex = i + 1;
       value = f(value);
     }
-  } catch(error) {
+  } catch (error) {
     if (error instanceof defs.Stop) {
       flush(fns, cleanIndex, collect);
     }

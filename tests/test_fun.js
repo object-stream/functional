@@ -8,26 +8,64 @@ const {none, finalValue, many, flushable} = fun;
 
 unit.add(module, [
   function test_fun_separate(t) {
-    test([1, 2, 3], fun(x => x * x, x => 2 * x + 1), [3, 9, 19], t, t.startAsync('test_fun_separate'));
+    test(
+      [1, 2, 3],
+      fun(
+        x => x * x,
+        x => 2 * x + 1
+      ),
+      [3, 9, 19],
+      t,
+      t.startAsync('test_fun_separate')
+    );
   },
   function test_funFinal(t) {
-    test([1, 2, 3], fun(x => x * x, x => finalValue(x), x => 2 * x + 1), [1, 4, 9], t, t.startAsync('test_funFinal'));
+    test(
+      [1, 2, 3],
+      fun(
+        x => x * x,
+        x => finalValue(x),
+        x => 2 * x + 1
+      ),
+      [1, 4, 9],
+      t,
+      t.startAsync('test_funFinal')
+    );
   },
   function test_funNothing(t) {
-    test([1, 2, 3], fun(x => x * x, () => none, x => 2 * x + 1), [], t, t.startAsync('test_funNothing'));
+    test(
+      [1, 2, 3],
+      fun(
+        x => x * x,
+        () => none,
+        x => 2 * x + 1
+      ),
+      [],
+      t,
+      t.startAsync('test_funNothing')
+    );
   },
   function test_funEmpty(t) {
     test([1, 2, 3], fun(), [1, 2, 3], t, t.startAsync('test_funEmpty'));
   },
   function test_funAsync(t) {
-    test([1, 2, 3], fun(delay(x => x * x), x => 2 * x + 1), [3, 9, 19], t, t.startAsync('test_funAsync'));
+    test(
+      [1, 2, 3],
+      fun(
+        delay(x => x * x),
+        x => 2 * x + 1
+      ),
+      [3, 9, 19],
+      t,
+      t.startAsync('test_funAsync')
+    );
   },
   function test_funGenerator(t) {
     test(
       [1, 2, 3],
       fun(
         x => x * x,
-        function*(x) {
+        function* (x) {
           yield x;
           yield x + 1;
           yield x + 2;
@@ -42,7 +80,11 @@ unit.add(module, [
   function test_funMany(t) {
     test(
       [1, 2, 3],
-      fun(x => x * x, x => many([x, x + 1, x + 2]), x => 2 * x + 1),
+      fun(
+        x => x * x,
+        x => many([x, x + 1, x + 2]),
+        x => 2 * x + 1
+      ),
       [3, 5, 7, 9, 11, 13, 19, 21, 23],
       t,
       t.startAsync('test_funMany')
@@ -54,7 +96,7 @@ unit.add(module, [
       fun(
         delay(x => -x),
         x => many([x, x * 10]),
-        function*(x) {
+        function* (x) {
           yield x;
           yield x - 1;
         },
@@ -71,7 +113,7 @@ unit.add(module, [
       fun(
         delay(x => -x),
         x => many([x, x * 10]),
-        function*(x) {
+        function* (x) {
           yield x;
           yield finalValue(x - 1);
         },
@@ -83,7 +125,16 @@ unit.add(module, [
     );
   },
   function test_funAsArray(t) {
-    test([1, 2, 3], fun(x => x * x, x => 2 * x + 1), [3, 9, 19], t, t.startAsync('test_funAsArray'));
+    test(
+      [1, 2, 3],
+      fun(
+        x => x * x,
+        x => 2 * x + 1
+      ),
+      [3, 9, 19],
+      t,
+      t.startAsync('test_funAsArray')
+    );
   },
   function test_funCollect(t) {
     const y = t.startAsync('test_funCollect');
@@ -102,7 +153,13 @@ unit.add(module, [
     let acc = 0;
     test(
       [1, 2, 3],
-      fun(x => x * x, flushable(x => ((acc += x), none), () => acc)),
+      fun(
+        x => x * x,
+        flushable(
+          x => ((acc += x), none),
+          () => acc
+        )
+      ),
       [14],
       t,
       t.startAsync('test_funFlush')
@@ -112,7 +169,13 @@ unit.add(module, [
     let acc = 0;
     test(
       [1, 2, 3],
-      fun(x => x * x, flushable(x => ((acc += x), none), () => acc)),
+      fun(
+        x => x * x,
+        flushable(
+          x => ((acc += x), none),
+          () => acc
+        )
+      ),
       [14],
       t,
       t.startAsync('test_funFlushCompact')
@@ -122,7 +185,10 @@ unit.add(module, [
     let acc = 0;
     test(
       [1, 2, 3],
-      fun(x => x * x, flushable(x => (x !== none ? ((acc += x), none) : acc))),
+      fun(
+        x => x * x,
+        flushable(x => (x !== none ? ((acc += x), none) : acc))
+      ),
       [14],
       t,
       t.startAsync('test_funFlushShort')
@@ -132,7 +198,16 @@ unit.add(module, [
     let acc = 0;
     test(
       [1, 2, 3],
-      fun(fun(x => x * x, flushable(x => ((acc += x), none), () => acc)), x => x + 1),
+      fun(
+        fun(
+          x => x * x,
+          flushable(
+            x => ((acc += x), none),
+            () => acc
+          )
+        ),
+        x => x + 1
+      ),
       [15],
       t,
       t.startAsync('test_funFlushEmbed')

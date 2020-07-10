@@ -9,7 +9,7 @@ const take = require('../utils/take');
 const takeWithSkip = require('../utils/takeWithSkip');
 const takeWhile = require('../utils/takeWhile');
 
-const natural = function*() {
+const natural = function* () {
   for (let i = 1; ; ++i) yield i;
 };
 

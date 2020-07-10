@@ -11,7 +11,10 @@ unit.add(module, [
   function test_gen_separate(t) {
     const y = t.startAsync('test_gen_separate');
 
-    const pipe = gen(x => x * x, x => 2 * x + 1);
+    const pipe = gen(
+      x => x * x,
+      x => 2 * x + 1
+    );
     const output = [];
 
     (async () => {
@@ -26,23 +29,52 @@ unit.add(module, [
     });
   },
   function test_genFinal(t) {
-    test([1, 2, 3], gen(x => x * x, x => finalValue(x), x => 2 * x + 1), [1, 4, 9], t, t.startAsync('test_genFinal'));
+    test(
+      [1, 2, 3],
+      gen(
+        x => x * x,
+        x => finalValue(x),
+        x => 2 * x + 1
+      ),
+      [1, 4, 9],
+      t,
+      t.startAsync('test_genFinal')
+    );
   },
   function test_compNothing(t) {
-    test([1, 2, 3], gen(x => x * x, () => none, x => 2 * x + 1), [], t, t.startAsync('test_compNothing'));
+    test(
+      [1, 2, 3],
+      gen(
+        x => x * x,
+        () => none,
+        x => 2 * x + 1
+      ),
+      [],
+      t,
+      t.startAsync('test_compNothing')
+    );
   },
   function test_genEmpty(t) {
     test([1, 2, 3], gen(), [1, 2, 3], t, t.startAsync('test_genEmpty'));
   },
   function test_genAsync(t) {
-    test([1, 2, 3], gen(delay(x => x * x), x => 2 * x + 1), [3, 9, 19], t, t.startAsync('test_genAsync'));
+    test(
+      [1, 2, 3],
+      gen(
+        delay(x => x * x),
+        x => 2 * x + 1
+      ),
+      [3, 9, 19],
+      t,
+      t.startAsync('test_genAsync')
+    );
   },
   function test_genGenerator(t) {
     test(
       [1, 2, 3],
       gen(
         x => x * x,
-        function*(x) {
+        function* (x) {
           yield x;
           yield x + 1;
           yield x + 2;
@@ -57,7 +89,11 @@ unit.add(module, [
   function test_genMany(t) {
     test(
       [1, 2, 3],
-      gen(x => x * x, x => many([x, x + 1, x + 2]), x => 2 * x + 1),
+      gen(
+        x => x * x,
+        x => many([x, x + 1, x + 2]),
+        x => 2 * x + 1
+      ),
       [3, 5, 7, 9, 11, 13, 19, 21, 23],
       t,
       t.startAsync('test_genMany')
@@ -69,7 +105,7 @@ unit.add(module, [
       gen(
         delay(x => -x),
         x => many([x, x * 10]),
-        function*(x) {
+        function* (x) {
           yield x;
           yield x - 1;
         },
@@ -86,7 +122,7 @@ unit.add(module, [
       gen(
         delay(x => -x),
         x => many([x, x * 10]),
-        function*(x) {
+        function* (x) {
           yield x;
           yield finalValue(x - 1);
         },
@@ -103,7 +139,7 @@ unit.add(module, [
       gen(
         delay(x => -x),
         x => many([x, x * 10]),
-        async function*(x) {
+        async function* (x) {
           yield delay(x => x)(x);
           yield delay(x => finalValue(x - 1))(x);
         },
@@ -118,7 +154,13 @@ unit.add(module, [
     let acc = 0;
     test(
       [1, 2, 3],
-      gen(x => x * x, flushable(x => ((acc += x), none), () => acc)),
+      gen(
+        x => x * x,
+        flushable(
+          x => ((acc += x), none),
+          () => acc
+        )
+      ),
       [14],
       t,
       t.startAsync('test_genFlush')
@@ -128,7 +170,13 @@ unit.add(module, [
     let acc = 0;
     test(
       [1, 2, 3],
-      gen(x => x * x, flushable(x => ((acc += x), none), () => acc)),
+      gen(
+        x => x * x,
+        flushable(
+          x => ((acc += x), none),
+          () => acc
+        )
+      ),
       [14],
       t,
       t.startAsync('test_genFlushCompact')
@@ -138,7 +186,10 @@ unit.add(module, [
     let acc = 0;
     test(
       [1, 2, 3],
-      gen(x => x * x, flushable(x => (x !== none ? ((acc += x), none) : acc))),
+      gen(
+        x => x * x,
+        flushable(x => (x !== none ? ((acc += x), none) : acc))
+      ),
       [14],
       t,
       t.startAsync('test_genFlushShort')
@@ -148,7 +199,16 @@ unit.add(module, [
     let acc = 0;
     test(
       [1, 2, 3],
-      gen(gen(x => x * x, flushable(x => ((acc += x), none), () => acc)), x => x + 1),
+      gen(
+        gen(
+          x => x * x,
+          flushable(
+            x => ((acc += x), none),
+            () => acc
+          )
+        ),
+        x => x + 1
+      ),
       [15],
       t,
       t.startAsync('test_genFlushEmbed')

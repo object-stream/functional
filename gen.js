@@ -2,7 +2,7 @@
 
 const defs = require('./defs');
 
-const next = async function*(value, fns, index) {
+const next = async function* (value, fns, index) {
   for (let i = index; i <= fns.length; ++i) {
     if (value && typeof value.then == 'function') {
       // thenable
@@ -62,7 +62,7 @@ const gen = (...fns) => {
     fns = [x => x];
   }
   let flushed = false;
-  const g = async function*(value) {
+  const g = async function* (value) {
     if (flushed) throw Error('Call to a flushed pipe.');
     if (value !== defs.none) {
       yield* next(value, fns, 0);

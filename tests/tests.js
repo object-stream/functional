@@ -14,6 +14,6 @@ if (nodeVersion && +nodeVersion[1] >= 10) {
   require('./test_gen_take');
   require('./test_gen_skip');
   require('./test_gen_fold');
-  }
+}
 
 unit.run();

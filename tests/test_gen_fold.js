@@ -14,12 +14,34 @@ unit.add(module, [
     test([1, 2, 3], gen(fold((acc, x) => acc + x, 0)), [6], t, t.startAsync('test_gen_fold'));
   },
   function test_gen_foldAsync(t) {
-    test([1, 2, 3], gen(fold(delay((acc, x) => acc + x), 0)), [6], t, t.startAsync('test_gen_foldAsync'));
+    test(
+      [1, 2, 3],
+      gen(
+        fold(
+          delay((acc, x) => acc + x),
+          0
+        )
+      ),
+      [6],
+      t,
+      t.startAsync('test_gen_foldAsync')
+    );
   },
   function test_gen_foldScan(t) {
     test([1, 2, 3], gen(scan((acc, x) => acc + x, 0)), [1, 3, 6], t, t.startAsync('test_gen_foldScan'));
   },
   function test_gen_foldScanAsync(t) {
-    test([1, 2, 3], gen(scan(delay((acc, x) => acc + x), 0)), [1, 3, 6], t, t.startAsync('test_gen_foldScanAsync'));
+    test(
+      [1, 2, 3],
+      gen(
+        scan(
+          delay((acc, x) => acc + x),
+          0
+        )
+      ),
+      [1, 3, 6],
+      t,
+      t.startAsync('test_gen_foldScanAsync')
+    );
   }
 ]);
