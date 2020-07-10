@@ -1,6 +1,6 @@
 {
   "name": "@object-stream/functional",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Creating streams/pipelines out of modern JS functions.",
   "engines": {
     "node": ">=8"
@@ -29,5 +29,9 @@
   "homepage": "https://github.com/object-stream/functional#readme",
   "devDependencies": {
     "heya-unit": "^0.3.0"
-  }
+  },
+  "files": [
+    "/*.js",
+    "/utils"
+  ]
 }
