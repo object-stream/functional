@@ -10,7 +10,7 @@ const pipe = gen(
 );
 
 (async () => {
-  for await (let buf of pipe()) {
+  for await (const buf of pipe()) {
     fs.writeSync(1, buf);
   }
 })();
