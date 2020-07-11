@@ -13,8 +13,6 @@ const natural = function* () {
   for (let i = 1; ; ++i) yield i;
 };
 
-const stop = fun.stop;
-
 unit.add(module, [
   function test_fun_take(t) {
     test([1, 2, 3, 4, 5], fun(take(2)), [1, 2], t, t.startAsync('test_fun_take'));
@@ -29,13 +27,13 @@ unit.add(module, [
     test([1, 2, 3, 4, 5], fun(takeWhile(delay(x => x != 3))), [1, 2], t, t.startAsync('test_fun_takeWhileAsync'));
   },
   function test_fun_take_infinite(t) {
-    test(natural(), fun(take(2, stop)), [1, 2], t, t.startAsync('test_fun_take_infinite'));
+    test(natural(), fun(take(2)), [1, 2], t, t.startAsync('test_fun_take_infinite'));
   },
   function test_fun_takeWithSkip_infinite(t) {
-    test(natural(), fun(takeWithSkip(2, 2, stop)), [3, 4], t, t.startAsync('test_fun_takeWithSkip_infinite'));
+    test(natural(), fun(takeWithSkip(2, 2)), [3, 4], t, t.startAsync('test_fun_takeWithSkip_infinite'));
   },
   function test_fun_takeWhile_infinite(t) {
-    test(natural(), fun(takeWhile(x => x != 3, stop)), [1, 2], t, t.startAsync('test_fun_takeWhile_infinite'));
+    test(natural(), fun(takeWhile(x => x != 3)), [1, 2], t, t.startAsync('test_fun_takeWhile_infinite'));
   },
   function test_fun_take_none(t) {
     test([1, 2, 3, 4, 5], fun(take(2, fun.none)), [1, 2], t, t.startAsync('test_fun_take'));

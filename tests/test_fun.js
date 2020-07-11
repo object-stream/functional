@@ -125,16 +125,18 @@ unit.add(module, [
     );
   },
   function test_funAsArray(t) {
-    test(
-      [1, 2, 3],
-      fun(
-        x => x * x,
-        x => 2 * x + 1
-      ),
-      [3, 9, 19],
-      t,
-      t.startAsync('test_funAsArray')
-    );
+    const y = t.startAsync('test_funCollect');
+    const pipe = fun.asArray(x => x * x, x => 2 * x + 1);
+    (async () => {
+      const results = [];
+      for (let value of [1, 2, 3]) {
+        results.push(await pipe(value));
+      }
+      return results;
+    })().then(results => {
+      eval(t.TEST('t.unify(results, [[3], [9], [19]])'));
+      y.done();
+    });
   },
   function test_funCollect(t) {
     const y = t.startAsync('test_funCollect');
@@ -163,22 +165,6 @@ unit.add(module, [
       [14],
       t,
       t.startAsync('test_funFlush')
-    );
-  },
-  function test_funFlushCompact(t) {
-    let acc = 0;
-    test(
-      [1, 2, 3],
-      fun(
-        x => x * x,
-        flushable(
-          x => ((acc += x), none),
-          () => acc
-        )
-      ),
-      [14],
-      t,
-      t.startAsync('test_funFlushCompact')
     );
   },
   function test_funFlushShort(t) {

@@ -41,7 +41,7 @@ unit.add(module, [
       t.startAsync('test_genFinal')
     );
   },
-  function test_compNothing(t) {
+  function test_genNothing(t) {
     test(
       [1, 2, 3],
       gen(
@@ -51,7 +51,7 @@ unit.add(module, [
       ),
       [],
       t,
-      t.startAsync('test_compNothing')
+      t.startAsync('test_genNothing')
     );
   },
   function test_genEmpty(t) {
@@ -164,22 +164,6 @@ unit.add(module, [
       [14],
       t,
       t.startAsync('test_genFlush')
-    );
-  },
-  function test_genFlushCompact(t) {
-    let acc = 0;
-    test(
-      [1, 2, 3],
-      gen(
-        x => x * x,
-        flushable(
-          x => ((acc += x), none),
-          () => acc
-        )
-      ),
-      [14],
-      t,
-      t.startAsync('test_genFlushCompact')
     );
   },
   function test_genFlushShort(t) {
