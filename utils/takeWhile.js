@@ -1,8 +1,8 @@
 'use strict';
 
-const {stop} = require('../defs');
+const {none} = require('../defs');
 
-const takeWhile = (f, finalValue = stop) => {
+const takeWhile = (f, finalValue = none) => {
   let test = true;
   return value => {
     if (!test) return finalValue;

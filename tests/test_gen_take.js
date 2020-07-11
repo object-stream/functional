@@ -28,13 +28,13 @@ unit.add(module, [
     test([1, 2, 3, 4, 5], gen(takeWhile(delay(x => x != 3))), [1, 2], t, t.startAsync('test_gen_takeWhileAsync'));
   },
   function test_gen_take_infinite(t) {
-    test(natural(), gen(take(2)), [1, 2], t, t.startAsync('test_gen_take_infinite'));
+    test(natural(), gen(take(2, gen.stop)), [1, 2], t, t.startAsync('test_gen_take_infinite'));
   },
   function test_gen_takeWithSkip_infinite(t) {
-    test(natural(), gen(takeWithSkip(2, 2)), [3, 4], t, t.startAsync('test_gen_takeWithSkip_infinite'));
+    test(natural(), gen(takeWithSkip(2, 2, gen.stop)), [3, 4], t, t.startAsync('test_gen_takeWithSkip_infinite'));
   },
   function test_gen_takeWhile_infinite(t) {
-    test(natural(), gen(takeWhile(x => x != 3)), [1, 2], t, t.startAsync('test_gen_takeWhile_infinite'));
+    test(natural(), gen(takeWhile(x => x != 3, gen.stop)), [1, 2], t, t.startAsync('test_gen_takeWhile_infinite'));
   },
   function test_gen_take_none(t) {
     test([1, 2, 3, 4, 5], gen(take(2, gen.none)), [1, 2], t, t.startAsync('test_gen_take'));
