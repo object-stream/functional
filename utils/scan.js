@@ -1,7 +1,5 @@
 'use strict';
 
-const {none} = require('../defs');
-
 const scan = (f, acc) => value => {
   const result = f(acc, value);
   if (result && typeof result.then == 'function') {
