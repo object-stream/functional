@@ -50,8 +50,8 @@ const next = async (value, fns, index, collect) => {
         collect(value);
         break;
       }
-      const f = fns[i];
       cleanIndex = i + 1;
+      const f = fns[i];
       value = f(value);
     }
   } catch (error) {
